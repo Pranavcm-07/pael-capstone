@@ -1,22 +1,56 @@
 package com.example.moneytransfer.domain;
 
 import com.example.moneytransfer.enums.TransactionStatus;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+@Entity
+@Table(name = "TRANSACTION_LOGS", indexes = {
+        @Index(name = "idx_idempotency_key", columnList = "idempotency_key", unique = true),
+        @Index(name = "idx_from_account_id", columnList = "from_account_id"),
+        @Index(name = "idx_to_account_id", columnList = "to_account_id")
+})
 public class TransactionLog {
 
+    @Id
+    @Column(name = "id", columnDefinition = "CHAR(36)", updatable = false)
     private UUID id;
+
+    @Column(name = "from_account_id", nullable = false)
     private Long fromAccountId;
+
+    @Column(name = "to_account_id", nullable = false)
     private Long toAccountId;
+
+    @Column(name = "amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     private TransactionStatus status;
+
+    @Column(name = "failure_reason", length = 500)
     private String failureReason;
+
+    @Column(name = "idempotency_key", nullable = false, unique = true, length = 255)
     private String idempotencyKey;
+
+    @Column(name = "created_on", nullable = false)
     private Instant createdOn;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+        if (this.createdOn == null) {
+            this.createdOn = Instant.now();
+        }
+    }
 
     public TransactionLog() {
         this.id = UUID.randomUUID();

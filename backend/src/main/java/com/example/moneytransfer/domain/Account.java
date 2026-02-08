@@ -3,18 +3,34 @@ package com.example.moneytransfer.domain;
 import com.example.moneytransfer.enums.AccountStatus;
 import com.example.moneytransfer.exception.AccountNotActiveException;
 import com.example.moneytransfer.exception.InsufficientBalanceException;
-
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
+@Entity
+@Table(name = "ACCOUNTS")
 public class Account {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "holder_name", nullable = false, length = 255)
     private String holderName;
+
+    @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     private AccountStatus status;
+
+    @Version
+    @Column(name = "version", nullable = false)
     private Integer version;
+
+    @Column(name = "last_updated")
     private Instant lastUpdated;
 
     public Account() {
@@ -33,13 +49,18 @@ public class Account {
         this.lastUpdated = Instant.now();
     }
 
+    @PreUpdate
+    public void setLastUpdatedOnSave() {
+        this.lastUpdated = Instant.now();
+    }
+
     public void debit(BigDecimal amount) {
         validateAmount(amount);
         validateAccountIsActive();
         validateSufficientBalance(amount);
 
         this.balance = this.balance.subtract(amount);
-        updateTimestamp();
+        this.lastUpdated = Instant.now();
     }
 
     public void credit(BigDecimal amount) {
@@ -47,7 +68,7 @@ public class Account {
         validateAccountIsActive();
 
         this.balance = this.balance.add(amount);
-        updateTimestamp();
+        this.lastUpdated = Instant.now();
     }
 
     public boolean isActive() {
@@ -75,10 +96,6 @@ public class Account {
         }
     }
 
-    private void updateTimestamp() {
-        this.lastUpdated = Instant.now();
-    }
-
     public Long getId() {
         return id;
     }
@@ -93,7 +110,6 @@ public class Account {
 
     public void setHolderName(String holderName) {
         this.holderName = holderName;
-        updateTimestamp();
     }
 
     public BigDecimal getBalance() {
@@ -102,7 +118,6 @@ public class Account {
 
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
-        updateTimestamp();
     }
 
     public AccountStatus getStatus() {
@@ -111,7 +126,6 @@ public class Account {
 
     public void setStatus(AccountStatus status) {
         this.status = status;
-        updateTimestamp();
     }
 
     public Integer getVersion() {
