@@ -30,6 +30,7 @@ public class TransferService {
 
     @Transactional
     public TransferResponse transfer(TransferRequest request) {
+        checkOwnership(request.fromAccountId());
         validateTransfer(request);
 
         Optional<TransactionLog> existing = transactionLogRepository.findByIdempotencyKey(request.idempotencyKey());
@@ -38,6 +39,15 @@ public class TransferService {
         }
 
         return executeTransfer(request);
+    }
+
+    private void checkOwnership(Long accountId) {
+        String authenticatedId = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        if (!authenticatedId.equals(String.valueOf(accountId))) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You are not authorized to transfer from this account.");
+        }
     }
 
     public void validateTransfer(TransferRequest request) {
@@ -74,32 +84,28 @@ public class TransferService {
                     request.fromAccountId(),
                     request.toAccountId(),
                     request.amount(),
-                    request.idempotencyKey()
-            );
+                    request.idempotencyKey());
             log = transactionLogRepository.save(log);
 
             return TransferResponse.success(
                     log.getId(),
                     request.fromAccountId(),
                     request.toAccountId(),
-                    request.amount()
-            );
+                    request.amount());
         } catch (AccountNotActiveException | InsufficientBalanceException e) {
             TransactionLog failedLog = TransactionLog.failed(
                     request.fromAccountId(),
                     request.toAccountId(),
                     request.amount(),
                     request.idempotencyKey(),
-                    e.getMessage()
-            );
+                    e.getMessage());
             transactionLogRepository.save(failedLog);
             return TransferResponse.failed(
                     failedLog.getId(),
                     e.getMessage(),
                     request.fromAccountId(),
                     request.toAccountId(),
-                    request.amount()
-            );
+                    request.amount());
         }
     }
 }

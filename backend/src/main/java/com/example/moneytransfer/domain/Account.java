@@ -22,6 +22,9 @@ public class Account {
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
 
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private AccountStatus status;
@@ -40,10 +43,11 @@ public class Account {
         this.lastUpdated = Instant.now();
     }
 
-    public Account(Long id, String holderName, BigDecimal balance, AccountStatus status) {
+    public Account(Long id, String holderName, BigDecimal balance, String password, AccountStatus status) {
         this.id = id;
         this.holderName = holderName;
         this.balance = balance != null ? balance : BigDecimal.ZERO;
+        this.password = password;
         this.status = status != null ? status : AccountStatus.ACTIVE;
         this.version = 0;
         this.lastUpdated = Instant.now();
@@ -110,6 +114,14 @@ public class Account {
 
     public void setHolderName(String holderName) {
         this.holderName = holderName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public BigDecimal getBalance() {

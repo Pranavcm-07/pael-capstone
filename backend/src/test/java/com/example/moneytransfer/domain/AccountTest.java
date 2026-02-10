@@ -20,7 +20,7 @@ class AccountTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account(1L, "John Doe", new BigDecimal("1000.00"), AccountStatus.ACTIVE);
+        account = new Account(1L, "John Doe", new BigDecimal("1000.00"), "password", AccountStatus.ACTIVE);
     }
 
     @Nested
@@ -262,7 +262,7 @@ class AccountTest {
         @DisplayName("Should create account with specified values")
         void testParameterizedConstructor() {
             Account newAccount = new Account(1L, "Jane Doe",
-                    new BigDecimal("500.00"), AccountStatus.ACTIVE);
+                    new BigDecimal("500.00"), "password", AccountStatus.ACTIVE);
 
             assertThat(newAccount.getId()).isEqualTo(1L);
             assertThat(newAccount.getHolderName()).isEqualTo("Jane Doe");
@@ -273,7 +273,7 @@ class AccountTest {
         @Test
         @DisplayName("Should handle null balance in constructor")
         void testConstructorWithNullBalance() {
-            Account newAccount = new Account(1L, "Jane Doe", null, AccountStatus.ACTIVE);
+            Account newAccount = new Account(1L, "Jane Doe", null, "password", AccountStatus.ACTIVE);
 
             assertThat(newAccount.getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
         }
@@ -282,7 +282,7 @@ class AccountTest {
         @DisplayName("Should handle null status in constructor")
         void testConstructorWithNullStatus() {
             Account newAccount = new Account(1L, "Jane Doe",
-                    new BigDecimal("500.00"), null);
+                    new BigDecimal("500.00"), "password", null);
 
             assertThat(newAccount.getStatus()).isEqualTo(AccountStatus.ACTIVE);
         }
@@ -295,8 +295,8 @@ class AccountTest {
         @Test
         @DisplayName("Should be equal when IDs match")
         void testEqualsWithSameId() {
-            Account account1 = new Account(1L, "John", new BigDecimal("100"), AccountStatus.ACTIVE);
-            Account account2 = new Account(1L, "Jane", new BigDecimal("200"), AccountStatus.LOCKED);
+            Account account1 = new Account(1L, "John", new BigDecimal("100"), "password", AccountStatus.ACTIVE);
+            Account account2 = new Account(1L, "Jane", new BigDecimal("200"), "password", AccountStatus.LOCKED);
 
             assertThat(account1).isEqualTo(account2);
             assertThat(account1.hashCode()).isEqualTo(account2.hashCode());
@@ -305,8 +305,8 @@ class AccountTest {
         @Test
         @DisplayName("Should not be equal when IDs differ")
         void testEqualsWithDifferentId() {
-            Account account1 = new Account(1L, "John", new BigDecimal("100"), AccountStatus.ACTIVE);
-            Account account2 = new Account(2L, "John", new BigDecimal("100"), AccountStatus.ACTIVE);
+            Account account1 = new Account(1L, "John", new BigDecimal("100"), "password", AccountStatus.ACTIVE);
+            Account account2 = new Account(2L, "John", new BigDecimal("100"), "password", AccountStatus.ACTIVE);
 
             assertThat(account1).isNotEqualTo(account2);
         }

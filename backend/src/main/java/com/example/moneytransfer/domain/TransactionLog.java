@@ -1,6 +1,8 @@
 package com.example.moneytransfer.domain;
 
 import com.example.moneytransfer.enums.TransactionStatus;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -17,6 +19,7 @@ import java.util.UUID;
 public class TransactionLog {
 
     @Id
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "id", columnDefinition = "CHAR(36)", updatable = false)
     private UUID id;
 
