@@ -137,3 +137,7 @@ logs/
 *.orig
 *.rej
 *.patch
+
+node_modules/
+
+.angular/
