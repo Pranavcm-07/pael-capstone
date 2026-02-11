@@ -1,84 +1,75 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map, of, switchMap } from 'rxjs';
 import { AccountInfo, Transaction } from '../models/models';
 import { AuthService } from './auth.service';
+
+interface BackendAccountResponse {
+  id: number;
+  holderName: string;
+  balance: number;
+  status: string;
+}
+
+interface BackendTransactionResponse {
+  id: string; // UUID
+  fromAccountId: number;
+  toAccountId: number;
+  amount: number;
+  status: string;
+  failureReason: string;
+  createdOn: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
-  private mockTransactions: Transaction[] = [
-    {
-      id: '1',
-      date: new Date('2026-01-08T10:30:00'),
-      type: 'DEBIT',
-      amount: 500,
-      description: 'Transfer to Jane Doe',
-      status: 'SUCCESS',
-      otherParty: 'Jane Doe'
-    },
-    {
-      id: '2',
-      date: new Date('2026-01-07T15:15:00'),
-      type: 'CREDIT',
-      amount: 1200,
-      description: 'Received from Bob Wilson',
-      status: 'SUCCESS',
-      otherParty: 'Bob Wilson'
-    },
-    {
-      id: '3',
-      date: new Date('2026-01-06T09:45:00'),
-      type: 'DEBIT',
-      amount: 750,
-      description: 'Transfer to Alice Brown',
-      status: 'SUCCESS',
-      otherParty: 'Alice Brown'
-    },
-    {
-      id: '4',
-      date: new Date('2026-01-05T11:20:00'),
-      type: 'CREDIT',
-      amount: 2500,
-      description: 'Received from Mike Chen',
-      status: 'SUCCESS',
-      otherParty: 'Mike Chen'
-    }
-  ];
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+  private apiUrl = 'http://localhost:8080/api/v1/accounts';
 
-  private currentBalance = 45250;
-
-  constructor(private authService: AuthService) { }
+  constructor() { }
 
   getAccountInfo(): Observable<AccountInfo> {
     const user = this.authService.getCurrentUser();
     if (!user) {
       throw new Error('User not logged in');
     }
-    return of({
-      user: user,
-      balance: this.currentBalance,
-      transactions: [...this.mockTransactions].sort((a, b) => b.date.getTime() - a.date.getTime())
-    });
+
+    return this.http.get<BackendAccountResponse>(`${this.apiUrl}/${user.id}`).pipe(
+      switchMap(account => {
+        return this.getTransactions().pipe(
+          map(transactions => ({
+            user: user,
+            balance: account.balance,
+            transactions: transactions
+          }))
+        );
+      })
+    );
   }
 
   getBalance(): Observable<number> {
-    return of(this.currentBalance);
+    const user = this.authService.getCurrentUser();
+    if (!user) return of(0);
+    return this.http.get<number>(`${this.apiUrl}/${user.id}/balance`);
   }
 
   getTransactions(): Observable<Transaction[]> {
-    return of([...this.mockTransactions].sort((a, b) => b.date.getTime() - a.date.getTime()));
-  }
+    const user = this.authService.getCurrentUser();
+    if (!user) return of([]);
 
-  updateBalance(amount: number, type: 'DEBIT' | 'CREDIT'): void {
-    if (type === 'DEBIT') {
-      this.currentBalance -= amount;
-    } else {
-      this.currentBalance += amount;
-    }
-  }
-
-  addTransaction(transaction: Transaction): void {
-    this.mockTransactions.unshift(transaction);
+    return this.http.get<BackendTransactionResponse[]>(`${this.apiUrl}/${user.id}/transactions`).pipe(
+      map(backendTransactions => backendTransactions.map(t => ({
+        id: t.id.toString(), // or t.id.toString() if UUID
+        date: new Date(t.createdOn), // Changed from timestamp to createdOn
+        type: t.fromAccountId.toString() === user.id ? 'DEBIT' : 'CREDIT', // Derive type
+        amount: t.amount,
+        description: t.status === 'FAILED' ? `Failed: ${t.failureReason}` : (t.fromAccountId.toString() === user.id ? `Transfer to ${t.toAccountId}` : `Received from ${t.fromAccountId}`),
+        status: t.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
+        otherParty: t.fromAccountId.toString() === user.id ? t.toAccountId.toString() : t.fromAccountId.toString()
+      } as Transaction)))
+    );
   }
 }

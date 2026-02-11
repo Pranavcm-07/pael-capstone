@@ -1,13 +1,22 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { User } from '../models/models';
+
+interface LoginResponse {
+  token: string;
+  accountId: number;
+  holderName: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private http = inject(HttpClient);
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private apiUrl = 'http://localhost:8080/api/auth';
 
   constructor() {
     const savedUser = localStorage.getItem('currentUser');
@@ -17,21 +26,20 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<User> {
-    // Simulated login logic
-    if (username === 'john_smith' && password === 'password123') {
-      const user: User = {
-        id: '1',
-        username: 'john_smith',
-        holderName: 'John Smith',
-        accountNumber: 'XXXX-XXXX-1234'
-      };
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      localStorage.setItem('token', 'mock-jwt-token');
-      this.currentUserSubject.next(user);
-      return of(user);
-    } else {
-      return throwError(() => new Error('Invalid username or password'));
-    }
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { accountId: username, password })
+      .pipe(map(response => {
+        const user: User = {
+          id: response.accountId.toString(),
+          username: response.accountId.toString(), // Using accountId as username
+          holderName: response.holderName,
+          accountNumber: response.accountId.toString() // Or format if needed
+        };
+
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        localStorage.setItem('token', response.token);
+        this.currentUserSubject.next(user);
+        return user;
+      }));
   }
 
   logout(): void {
