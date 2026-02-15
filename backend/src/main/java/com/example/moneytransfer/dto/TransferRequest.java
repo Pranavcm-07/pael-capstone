@@ -12,12 +12,6 @@ public record TransferRequest(@NotNull(message = "Source account ID is required"
         @NotNull(message = "Transfer amount is required") @DecimalMin(value = "0.01", message = "Transfer amount must be at least 0.01") BigDecimal amount,
 
         @NotNull(message = "Idempotency key is required") String idempotencyKey) {
-    public TransferRequest {
-        if (fromAccountId != null && toAccountId != null && fromAccountId.equals(toAccountId)) {
-            throw new IllegalArgumentException("Source and destination accounts must be different");
-        }
-    }
-
     public static TransferRequest of(Long fromAccountId, Long toAccountId, BigDecimal amount) {
         return new TransferRequest(fromAccountId, toAccountId, amount, java.util.UUID.randomUUID().toString());
     }
