@@ -26,11 +26,11 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<User> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { accountId: username, password })
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password })
       .pipe(map(response => {
         const user: User = {
           id: response.accountId.toString(),
-          username: response.accountId.toString(), // Using accountId as username
+          username: response.holderName, // Using holderName (Pranav) as username
           holderName: response.holderName,
           accountNumber: response.accountId.toString() // Or format if needed
         };

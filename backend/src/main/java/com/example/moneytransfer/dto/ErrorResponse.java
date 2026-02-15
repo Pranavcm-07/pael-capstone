@@ -7,6 +7,11 @@ public record ErrorResponse(String errorCode, String message) {
     public static final String DUPLICATE_TRANSFER = "DUPLICATE_TRANSFER";
     public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
     public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
+    public static final String AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED";
+
+    public static ErrorResponse authenticationFailed(String message) {
+        return new ErrorResponse(AUTHENTICATION_FAILED, message);
+    }
 
     public static ErrorResponse accountNotFound(Long accountId) {
         return new ErrorResponse(ACCOUNT_NOT_FOUND, String.format("Account with ID %d not found", accountId));

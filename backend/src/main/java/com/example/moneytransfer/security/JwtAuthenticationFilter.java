@@ -44,7 +44,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             accountId = jwtUtil.extractUsername(jwt);
             if (accountId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(accountId);
+                // Parse accountId as Long and load user by ID
+                Long id = Long.parseLong(accountId);
+                CustomUserDetailsService customUserDetailsService = (CustomUserDetailsService) this.userDetailsService;
+                UserDetails userDetails = customUserDetailsService.loadUserById(id);
                 if (jwtUtil.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,

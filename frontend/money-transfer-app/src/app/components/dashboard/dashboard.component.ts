@@ -31,8 +31,18 @@ export class DashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.accountService.getAccountInfo().subscribe(info => {
-      this.accountInfo = info;
+    this.accountService.getAccountInfo().subscribe({
+      next: (info) => {
+        this.accountInfo = info;
+      },
+      error: (err) => {
+        console.error('Failed to load account info:', err);
+        // If unauthorized or forbidden, redirect to login
+        if (err.status === 401 || err.status === 403) {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        }
+      }
     });
   }
 

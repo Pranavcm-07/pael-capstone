@@ -20,31 +20,36 @@ public class DataInitializer {
             if (accountRepository.count() == 0) {
                 Account account1 = new Account(
                         null,
-                        "User One",
+                        "Pranav",
                         new BigDecimal("1000.00"),
-                        passwordEncoder.encode("pass1"),
+                        passwordEncoder.encode("pranav123"),
                         AccountStatus.ACTIVE);
 
                 Account account2 = new Account(
                         null,
-                        "User Two",
+                        "Pranesh",
                         new BigDecimal("1000.00"),
-                        passwordEncoder.encode("pass2"),
+                        passwordEncoder.encode("pranesh123"),
+                        AccountStatus.ACTIVE);
+                Account account3 = new Account(
+                        null,
+                        "Pradeep",
+                        new BigDecimal("1000.00"),
+                        passwordEncoder.encode("pradeep123"),
+                        AccountStatus.ACTIVE);
+                Account account4 = new Account(
+                        null,
+                        "Nivedita",
+                        new BigDecimal("1000.00"),
+                        passwordEncoder.encode("nivedita123"),
                         AccountStatus.ACTIVE);
 
                 accountRepository.save(account1);
                 accountRepository.save(account2);
+                accountRepository.save(account3);
+                accountRepository.save(account4);
 
-                System.out.println("Data Initialized: Account 1 (pass1) and Account 2 (pass2) created.");
-            } else {
-                // Fix existing accounts with missing passwords OR update them to match the
-                // pattern (id:pass<id>)
-                accountRepository.findAll().forEach(account -> {
-                    String newPassword = "pass" + account.getId();
-                    account.setPassword(passwordEncoder.encode(newPassword));
-                    accountRepository.save(account);
-                    System.out.println("Updated account " + account.getId() + " with password '" + newPassword + "'");
-                });
+                System.out.println("Data Initialized: Account 1 (pranav123) and Account 2 (pranesh123) created.");
             }
         };
     }

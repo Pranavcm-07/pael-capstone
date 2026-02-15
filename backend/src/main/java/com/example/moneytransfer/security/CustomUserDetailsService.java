@@ -22,21 +22,32 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        try {
-            Long accountId = Long.parseLong(username);
-            Account account = accountRepository.findById(accountId)
-                    .orElseThrow(() -> new UsernameNotFoundException("Account not found with ID: " + username));
+        Account account = accountRepository.findByHolderName(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Account not found with username: " + username));
 
-            if (!account.isActive()) {
-                throw new UsernameNotFoundException("Account is not active: " + username);
-            }
-
-            return new User(
-                    String.valueOf(account.getId()),
-                    account.getPassword(),
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-        } catch (NumberFormatException e) {
-            throw new UsernameNotFoundException("Invalid Account ID format: " + username);
+        if (!account.isActive()) {
+            throw new org.springframework.security.authentication.DisabledException(
+                    "Account is not active: " + username);
         }
+
+        return new User(
+                String.valueOf(account.getId()), // User Principal is still the ID for internal logic convenience
+                account.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+    }
+
+    // Load user by ID for JWT token validation
+    public UserDetails loadUserById(Long id) throws UsernameNotFoundException {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Account not found with ID: " + id));
+
+        if (!account.isActive()) {
+            throw new org.springframework.security.authentication.DisabledException("Account is not active");
+        }
+
+        return new User(
+                String.valueOf(account.getId()),
+                account.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }
 }

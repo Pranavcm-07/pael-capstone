@@ -49,8 +49,14 @@ export class TransferComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.accountService.getAccountInfo().subscribe(info => {
-      this.accountInfo = info;
+    this.accountService.getAccountInfo().subscribe({
+      next: (info) => {
+        this.accountInfo = info;
+      },
+      error: (err) => {
+        console.error('Failed to load account info:', err);
+        this.errorMessage = 'Failed to load account information';
+      }
     });
   }
 
@@ -76,7 +82,17 @@ export class TransferComponent implements OnInit {
         },
         error: (err) => {
           this.loading = false;
-          this.errorMessage = 'Transfer failed. Please try again.';
+          // Extract error message from backend response
+          if (err.error && err.error.message) {
+            this.errorMessage = err.error.message;
+          } else if (err.message) {
+            this.errorMessage = err.message;
+          } else {
+            this.errorMessage = 'Transfer failed. Please try again.';
+          }
+          if (this.errorMessage) {
+            this.snackBar.open(this.errorMessage, 'Close', { duration: 5000 });
+          }
         }
       });
     }

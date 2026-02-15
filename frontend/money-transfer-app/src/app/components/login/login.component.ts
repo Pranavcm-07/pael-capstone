@@ -49,7 +49,14 @@ export class LoginComponent {
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
-          this.error = err.message;
+          // Extract error message from backend response
+          if (err.error && err.error.message) {
+            this.error = err.error.message;
+          } else if (err.message) {
+            this.error = err.message;
+          } else {
+            this.error = 'Login failed. Please try again.';
+          }
           this.loading = false;
         }
       });
