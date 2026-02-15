@@ -3,29 +3,31 @@
         <button class="back-btn" [routerLink]="['/dashboard']">
             <span class="material-icons">arrow_back</span>
         </button>
-        <h1>Transaction History</h1>
+        <h1 style="color: white;">Transaction History</h1>
     </header>
 
-    <div class="filter-tabs">
-        <button [class.active]="filter === 'ALL'" (click)="setFilter('ALL')">All</button>
-        <button [class.active]="filter === 'SENT'" (click)="setFilter('SENT')">Sent</button>
-        <button [class.active]="filter === 'RECEIVED'" (click)="setFilter('RECEIVED')">Received</button>
-    </div>
+    <div class="history-content">
+        <div class="filter-tabs">
+            <button [class.active]="filter === 'ALL'" (click)="setFilter('ALL')">All</button>
+            <button [class.active]="filter === 'SENT'" (click)="setFilter('SENT')">Sent</button>
+            <button [class.active]="filter === 'RECEIVED'" (click)="setFilter('RECEIVED')">Received</button>
+        </div>
 
-    <div class="transaction-list">
-        <div class="transaction-item" *ngFor="let tx of filteredTransactions">
-            <div class="tx-icon" [ngClass]="tx.type.toLowerCase()">
-                <span class="material-icons">{{ tx.type === 'DEBIT' ? 'north_east' : 'south_west' }}</span>
-            </div>
-            <div class="tx-info">
-                <p class="tx-title">{{ tx.description }}</p>
-                <p class="tx-date">{{ tx.date | date:'MMM dd, yyyy • hh:mm a' }}</p>
-            </div>
-            <div class="tx-amount-status">
-                <p class="tx-amount" [ngClass]="tx.type.toLowerCase()">
-                    {{ tx.type === 'DEBIT' ? '-' : '+' }} ₹{{ tx.amount | number:'1.2-2' }}
-                </p>
-                <span class="tx-status" [ngClass]="tx.status.toLowerCase()">{{ tx.status | titlecase }}</span>
+        <div class="transaction-list">
+            <div class="transaction-item" *ngFor="let tx of filteredTransactions">
+                <div class="tx-icon" [ngClass]="tx.type.toLowerCase()">
+                    <span class="material-icons">{{ tx.type === 'DEBIT' ? 'north_east' : 'south_west' }}</span>
+                </div>
+                <div class="tx-info">
+                    <p class="tx-title">{{ tx.description }}</p>
+                    <p class="tx-date">{{ tx.date | date:'MMM dd, yyyy • hh:mm a' }}</p>
+                </div>
+                <div class="tx-amount-status">
+                    <p class="tx-amount" [ngClass]="tx.type.toLowerCase()">
+                        {{ tx.type === 'DEBIT' ? '-' : '+' }} ₹{{ tx.amount | number:'1.2-2' }}
+                    </p>
+                    <span class="tx-status" [ngClass]="tx.status.toLowerCase()">{{ tx.status | titlecase }}</span>
+                </div>
             </div>
         </div>
     </div>

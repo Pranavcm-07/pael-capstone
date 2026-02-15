@@ -4,95 +4,187 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background-color: #f5f7fb;
-    padding: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: var(--spacing-lg);
 }
 
 .login-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.header-content {
+    animation: fadeInDown 0.6s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .icon-circle {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 16px;
-    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+    margin: 0 auto var(--spacing-lg);
+    box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.icon-circle:hover {
+    transform: scale(1.05);
 }
 
 .currency-symbol {
     color: white;
-    font-size: 32px;
+    font-size: 2rem;
     font-weight: bold;
 }
 
 h1 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .login-card {
     width: 100%;
-    max-width: 400px;
-    padding: 40px;
-    border-radius: 24px;
+    max-width: 420px;
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-2xl);
+    animation: fadeInUp 0.6s ease;
+    box-shadow: var(--shadow-xl);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+form {
+    width: 100%;
 }
 
 .form-field {
-    margin-bottom: 16px;
+    width: 100%;
+    margin-bottom: var(--spacing-lg);
 }
 
 .form-field label {
     display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #666;
-    margin-bottom: 8px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
 }
 
 .login-button {
     width: 100%;
-    height: 50px;
-    font-size: 16px;
+    height: 52px;
+    font-size: var(--font-size-base);
     font-weight: 600;
-    border-radius: 12px;
-    background-color: #1a73e8 !important;
-    margin-top: 16px;
+    border-radius: var(--radius-lg);
+    background-color: var(--primary-color) !important;
+    margin-top: var(--spacing-lg);
+    transition: all 0.3s ease;
+}
+
+.login-button:hover:not(:disabled) {
+    background-color: var(--primary-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(30, 58, 138, 0.3);
 }
 
 .forgot-password {
     text-align: center;
-    margin-top: 20px;
+    margin-top: var(--spacing-lg);
 }
 
 .forgot-password a {
-    color: #666;
+    color: var(--primary-color);
     text-decoration: none;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.forgot-password a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
 }
 
 .error-alert {
-    background-color: #ffebee;
-    color: #c62828;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 14px;
+    background-color: var(--error-light);
+    color: var(--error-color);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-sm);
     text-align: center;
+    border: 1px solid var(--error-color);
+    animation: shake 0.4s ease;
 }
 
-/* Material overrides */
-::ng-deep .mat-mdc-text-field-wrapper {
-    background-color: #f8f9fa !important;
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-8px);
+    }
+
+    75% {
+        transform: translateX(8px);
+    }
 }
 
-::ng-deep .mat-mdc-form-field-focus-overlay {
+/* Material overrides for login */
+::ng-deep .login-card .mat-mdc-text-field-wrapper {
+    background-color: #f8fafc !important;
+}
+
+::ng-deep .login-card .mat-mdc-form-field-focus-overlay {
     background-color: transparent !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .login-card {
+        padding: var(--spacing-xl);
+    }
+
+    h1 {
+        font-size: var(--font-size-xl);
+    }
+
+    .icon-circle {
+        width: 64px;
+        height: 64px;
+    }
+
+    .currency-symbol {
+        font-size: 1.5rem;
+    }
 }
