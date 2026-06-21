@@ -1,0 +1,100 @@
+<div class="login-viewport">
+  <div class="auth-glass-card">
+    <div class="auth-brand-header">
+      <div class="auth-brand-logo">
+        <svg lucideWallet [size]="28" color="white"></svg>
+      </div>
+      <h1>TRANSFO</h1>
+      <p>Sign in to your secure digital wallet</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      <!-- Error Banner -->
+      @if (errorMessage) {
+        <div class="auth-error-banner animate-fade-in">
+          <svg lucideAlertCircle [size]="16" style="flex-shrink: 0;"></svg>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <!-- Username Field -->
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <div class="input-icon-wrapper">
+          <svg lucideUser [size]="16" class="input-icon"></svg>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            placeholder="Enter your username"
+            class="form-input with-icon"
+            [class.error]="usernameInvalid"
+            autocomplete="username"
+          />
+        </div>
+        @if (usernameInvalid) {
+          <div class="form-error">
+            <svg lucideAlertCircle [size]="12"></svg>
+            Username is required
+          </div>
+        }
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-icon-wrapper">
+          <svg lucideLock [size]="16" class="input-icon"></svg>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            formControlName="password"
+            placeholder="Enter your password"
+            class="form-input with-icon with-suffix"
+            [class.error]="passwordInvalid"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="input-suffix-btn"
+            (click)="togglePassword()"
+            id="toggle-password-btn"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          >
+            @if (showPassword) {
+              <svg lucideEyeOff [size]="16"></svg>
+            } @else {
+              <svg lucideEye [size]="16"></svg>
+            }
+          </button>
+        </div>
+        @if (passwordInvalid) {
+          <div class="form-error">
+            <svg lucideAlertCircle [size]="12"></svg>
+            Password is required
+          </div>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn-auth-submit"
+        [disabled]="isLoading"
+        id="login-submit-btn"
+      >
+        @if (isLoading) {
+          <div class="spinner" style="width: 18px; height: 18px; border-width: 2px; border-color: #fff transparent transparent transparent;"></div>
+          Signing in...
+        } @else {
+          Sign In
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account?
+      <a routerLink="/register" id="go-to-register-link">Create one now</a>
+    </div>
+  </div>
+</div>

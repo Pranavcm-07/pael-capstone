@@ -1,23 +1,44 @@
 package com.example.moneytransfer.dto;
 
-import com.example.moneytransfer.domain.Account;
-import com.example.moneytransfer.enums.AccountStatus;
-
 import java.math.BigDecimal;
 
-public record AccountResponse(Long id, String holderName, BigDecimal balance, AccountStatus status) {
-    public static AccountResponse fromAccount(Account account) {
-        if (account == null) {
-            throw new IllegalArgumentException("Account cannot be null");
-        }
-        return new AccountResponse(account.getId(), account.getHolderName(), account.getBalance(), account.getStatus());
+public class AccountResponse {
+
+    private Long id;
+    private String holderName;
+    private BigDecimal balance;
+    private String status;
+
+    public Long getId() {
+        return id;
     }
 
-    public boolean isActive() {
-        return status == AccountStatus.ACTIVE;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getStatusDisplayName() {
-        return status != null ? status.getDisplayName() : "Unknown";
+    public String getHolderName() {
+        return holderName;
+    }
+
+    public void setHolderName(String holderName) {
+        this.holderName = holderName;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
+

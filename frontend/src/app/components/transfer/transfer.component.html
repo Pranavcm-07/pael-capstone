@@ -1,0 +1,295 @@
+<div class="transfer-wrapper">
+  <header class="transfer-header">
+    <div>
+      <h1 class="transfer-title">Send Money</h1>
+      <p class="transfer-subtitle">Transfer funds instantly and securely</p>
+    </div>
+  </header>
+
+  <div class="steps-bar" aria-label="Transfer progress">
+    <div class="step-item" [class.active]="step() === 'lookup' || step() === 'verify'"
+      [class.done]="step() === 'amount' || step() === 'confirm' || step() === 'success'">
+      <div class="step-dot">
+        @if (step() === 'amount' || step() === 'confirm' || step() === 'success') { ✓ } @else { 1 }
+      </div>
+      <span>Recipient</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" [class.active]="step() === 'amount'"
+      [class.done]="step() === 'confirm' || step() === 'success'">
+      <div class="step-dot">
+        @if (step() === 'confirm' || step() === 'success') { ✓ } @else { 2 }
+      </div>
+      <span>Amount</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" [class.active]="step() === 'confirm'" [class.done]="step() === 'success'">
+      <div class="step-dot">
+        @if (step() === 'success') { ✓ } @else { 3 }
+      </div>
+      <span>Confirm</span>
+    </div>
+  </div>
+
+  <div class="transfer-layout">
+    <main class="transfer-card">
+      @if (step() === 'lookup') {
+      <section class="panel-section">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Step 1</p>
+          <h2>Who are you sending money to?</h2>
+          <p>Enter the recipient's numeric account ID to retrieve details.</p>
+        </div>
+
+        <form [formGroup]="lookupForm" (ngSubmit)="onLookupSubmit()" class="form-stack">
+          <div class="field-group">
+            <label for="toAccountId">Recipient Account ID</label>
+            <div class="input-shell">
+              <svg lucideUser [size]="18"></svg>
+              <input type="text" id="toAccountId" formControlName="toAccountId"
+                placeholder="Enter the recipient's account number" [class.error]="lookupInvalid" />
+            </div>
+            @if (lookupInvalid) {
+            <p class="field-error">
+              <svg lucideAlertCircle [size]="12"></svg>
+              Valid numeric Account Number is required
+            </p>
+            }
+          </div>
+
+          <div class="button-row single">
+            <button type="submit" class="btn-primary" [disabled]="isLookingUp()" id="lookup-submit-btn">
+              @if (isLookingUp()) {
+              <svg lucideLoader [size]="16" class="spin"></svg> Searching...
+              } @else {
+              Continue <svg lucideArrowRight [size]="16"></svg>
+              }
+            </button>
+          </div>
+        </form>
+      </section>
+      }
+
+      @if (step() === 'verify') {
+      <section class="panel-section">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Step 1</p>
+          <h2>Verify Recipient</h2>
+          <p>Verify that the details match your intended recipient.</p>
+        </div>
+
+        <div class="recipient-card">
+          <div class="recipient-main">
+            <div class="recipient-icon">
+              <svg lucideUser [size]="24"></svg>
+            </div>
+            <div class="recipient-copy">
+              <span>Account Holder</span>
+              <strong>{{ recipient()?.holderName }}</strong>
+              <small>Account Number: {{ recipient()?.id }}</small>
+            </div>
+          </div>
+          <div class="recipient-status">
+            <span>Status</span>
+            @if (recipient()?.status === 'ACTIVE') {
+            <strong class="badge active">Active</strong>
+            } @else if (recipient()?.status === 'UNVERIFIED') {
+            <strong class="badge warn"><svg lucideAlertTriangle [size]="12"></svg> Unverified</strong>
+            } @else {
+            <strong class="badge danger">{{ recipient()?.status }}</strong>
+            }
+          </div>
+        </div>
+
+        @if (recipient()?.status === 'UNVERIFIED') {
+        <div class="warn-banner">
+          <svg lucideAlertTriangle [size]="16"></svg>
+          <span>We couldn't check this recipient on the network. Make sure the ID is correct before executing the
+            transfer.</span>
+        </div>
+        }
+
+        <div class="button-row">
+          <button type="button" class="btn-secondary" (click)="goBack()">
+            <svg lucideArrowLeft [size]="16"></svg> Change Account
+          </button>
+          <button type="button" class="btn-primary" (click)="confirmRecipient()" id="recipient-confirm-btn">
+            Proceed <svg lucideArrowRight [size]="16"></svg>
+          </button>
+        </div>
+      </section>
+      }
+
+      @if (step() === 'amount') {
+      <section class="panel-section">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Step 2</p>
+          <h2>Enter Transfer Amount</h2>
+          <p>Specify how much you would like to transfer to {{ recipient()?.holderName }}.</p>
+        </div>
+
+        <form [formGroup]="amountForm" (ngSubmit)="onAmountSubmit()" class="form-stack">
+          <div class="field-group amount-group">
+            <label for="amount">Amount (USD)</label>
+            <div class="amount-shell">
+              <span>$</span>
+              <input type="number" id="amount" formControlName="amount" placeholder="0.00" step="0.01" min="0.01"
+                max="100000" [class.error]="amountInvalid" />
+            </div>
+            @if (amountInvalid) {
+            <p class="field-error">
+              <svg lucideAlertCircle [size]="12"></svg>
+              Please enter a valid amount between $0.01 and $100,000.00
+            </p>
+            }
+          </div>
+
+          <div class="inline-summary">
+            <div>
+              <span>Recipient</span>
+              <strong>{{ recipient()?.holderName }}</strong>
+            </div>
+            <div>
+              <span>Transfer Fee</span>
+              <strong>Free ($0.00)</strong>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="button" class="btn-secondary" (click)="goBack()">
+              <svg lucideArrowLeft [size]="16"></svg> Back
+            </button>
+            <button type="submit" class="btn-primary" id="amount-submit-btn">
+              Review <svg lucideArrowRight [size]="16"></svg>
+            </button>
+          </div>
+        </form>
+      </section>
+      }
+
+      @if (step() === 'confirm') {
+      <section class="panel-section">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Step 3</p>
+          <h2>Confirm Transfer</h2>
+          <p>Please review the details below before processing the transfer.</p>
+        </div>
+
+        @if (errorMessage()) {
+        <div class="error-banner">
+          <svg lucideAlertCircle [size]="16"></svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+        }
+
+        <div class="confirm-summary">
+          <div class="summary-row highlight">
+            <span>Recipient Name</span>
+            <strong>{{ recipient()?.holderName }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Recipient Account ID</span>
+            <strong>{{ recipient()?.id }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Amount</span>
+            <strong>{{ amountForm.value.amount | currency:'USD' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Transfer Fee</span>
+            <strong class="free">Free ($0.00)</strong>
+          </div>
+          <div class="summary-row total">
+            <span>Total Charged</span>
+            <strong>{{ amountForm.value.amount | currency:'USD' }}</strong>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="button" class="btn-secondary" (click)="goBack()" [disabled]="isSubmitting()">
+            <svg lucideArrowLeft [size]="16"></svg> Edit Amount
+          </button>
+          <button type="button" class="btn-primary" (click)="executeTransfer()" [disabled]="isSubmitting()"
+            id="confirm-execute-btn">
+            @if (isSubmitting()) {
+            <svg lucideLoader [size]="16" class="spin"></svg> Sending...
+            } @else {
+            Confirm &amp; Send <svg lucideSend [size]="16"></svg>
+            }
+          </button>
+        </div>
+      </section>
+      }
+
+      @if (step() === 'success') {
+      <section class="success-section">
+        <div class="success-icon">
+          <svg lucideCheckCircle2 [size]="34"></svg>
+        </div>
+
+        <div class="panel-header centered">
+          <p class="panel-eyebrow">Complete</p>
+          <h2>Transfer Successful!</h2>
+          <p>Your funds have been dispatched immediately.</p>
+        </div>
+
+        <div class="receipt-card">
+          <div class="receipt-row">
+            <span>Transaction ID</span>
+            <strong>{{ receipt()?.transactionId }}</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Sent To</span>
+            <strong>{{ receipt()?.recipientName }} (ID: {{ receipt()?.recipientId }})</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Amount Transferred</span>
+            <strong>{{ receipt()?.amount | currency:'USD' }}</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Date</span>
+            <strong>{{ receipt()?.timestamp | date:'dd MMM yyyy, hh:mm a' }}</strong>
+          </div>
+          <div class="reward-row">
+            <span><svg lucideStar [size]="14" fill="currentColor"></svg> Rewards Point Earned</span>
+            <strong>+{{ receipt()?.rewardPointsEarned }} pts</strong>
+          </div>
+        </div>
+
+        <div class="button-row success-actions">
+          <button type="button" class="btn-secondary" routerLink="/dashboard">Dashboard</button>
+          <button type="button" class="btn-primary" (click)="resetTransfer()" id="make-another-btn">Another
+            Transfer</button>
+        </div>
+      </section>
+      }
+    </main>
+
+    <aside class="transfer-side">
+      <div class="side-card">
+        <span class="side-label">Transfer Summary</span>
+        <div class="side-row">
+          <span>Recipient</span>
+          <strong>{{ recipient()?.holderName || 'Not selected' }}</strong>
+        </div>
+        <div class="side-row">
+          <span>Amount</span>
+          <strong>{{ amountForm.value.amount ? (amountForm.value.amount | currency:'USD') : '$0.00' }}</strong>
+        </div>
+        <div class="side-row">
+          <span>Fee</span>
+          <strong class="free">Free</strong>
+        </div>
+      </div>
+
+      <div class="side-card muted">
+        <span class="side-label">Current Step</span>
+        @if (step() === 'lookup') { <strong>Find recipient</strong> }
+        @if (step() === 'verify') { <strong>Verify recipient</strong> }
+        @if (step() === 'amount') { <strong>Enter amount</strong> }
+        @if (step() === 'confirm') { <strong>Confirm transfer</strong> }
+        @if (step() === 'success') { <strong>Transfer complete</strong> }
+      </div>
+    </aside>
+  </div>
+</div>

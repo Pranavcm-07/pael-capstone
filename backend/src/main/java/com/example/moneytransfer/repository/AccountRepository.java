@@ -2,9 +2,14 @@ package com.example.moneytransfer.repository;
 
 import com.example.moneytransfer.domain.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import java.util.List;
 
-@Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    java.util.Optional<Account> findByHolderName(String holderName);
+    List<Account> findByUserId(Long userId);
+    List<Account> findByUserUsername(String username);
+
+    @Query("SELECT COALESCE(SUM(a.balance), 0) FROM Account a")
+    java.math.BigDecimal sumAllBalances();
 }
+

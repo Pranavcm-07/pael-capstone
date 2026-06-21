@@ -1,18 +1,58 @@
 package com.example.moneytransfer.dto;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-public record TransferRequest(@NotNull(message = "Source account ID is required") Long fromAccountId,
+public class TransferRequest {
 
-        @NotNull(message = "Destination account ID is required") Long toAccountId,
+    @NotNull
+    private Long fromAccountId;
 
-        @NotNull(message = "Transfer amount is required") @DecimalMin(value = "0.01", message = "Transfer amount must be at least 0.01") BigDecimal amount,
+    @NotNull
+    private Long toAccountId;
 
-        @NotNull(message = "Idempotency key is required") String idempotencyKey) {
-    public static TransferRequest of(Long fromAccountId, Long toAccountId, BigDecimal amount) {
-        return new TransferRequest(fromAccountId, toAccountId, amount, java.util.UUID.randomUUID().toString());
+    @NotNull
+    @DecimalMin(value = "0.01")
+    @DecimalMax(value = "1000000.00")
+    private BigDecimal amount;
+
+    @NotBlank
+    private String idempotencyKey;
+
+    public Long getFromAccountId() {
+        return fromAccountId;
+    }
+
+    public void setFromAccountId(Long fromAccountId) {
+        this.fromAccountId = fromAccountId;
+    }
+
+    public Long getToAccountId() {
+        return toAccountId;
+    }
+
+    public void setToAccountId(Long toAccountId) {
+        this.toAccountId = toAccountId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 }
+

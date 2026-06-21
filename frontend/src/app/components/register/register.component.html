@@ -1,0 +1,117 @@
+<div class="login-viewport">
+  <div class="auth-glass-card">
+    <div class="auth-brand-header">
+      <div class="auth-brand-logo">
+        <svg lucideWallet [size]="28" color="white"></svg>
+      </div>
+      <h1>Create Account</h1>
+      <p>Join TRANSFO and manage your assets instantly</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+      <!-- Error Banner -->
+      @if (errorMessage) {
+        <div class="auth-error-banner animate-fade-in">
+          <svg lucideAlertCircle [size]="16" style="flex-shrink: 0;"></svg>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <!-- Username Field -->
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <div class="input-icon-wrapper">
+          <svg lucideUser [size]="16" class="input-icon"></svg>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            placeholder="Choose a username"
+            class="form-input with-icon"
+            [class.error]="usernameInvalid"
+            autocomplete="username"
+          />
+        </div>
+        @if (usernameInvalid) {
+          <div class="form-error">
+            <svg lucideAlertCircle [size]="12"></svg>
+            @if (usernameControl?.hasError('required')) { Username is required }
+            @else if (usernameControl?.hasError('minlength')) { At least 3 characters required }
+          </div>
+        }
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-icon-wrapper">
+          <svg lucideLock [size]="16" class="input-icon"></svg>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            formControlName="password"
+            placeholder="Choose a strong password"
+            class="form-input with-icon with-suffix"
+            [class.error]="passwordInvalid"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="input-suffix-btn"
+            (click)="togglePassword()"
+            id="toggle-password-btn"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          >
+            @if (showPassword) {
+              <svg lucideEyeOff [size]="16"></svg>
+            } @else {
+              <svg lucideEye [size]="16"></svg>
+            }
+          </button>
+        </div>
+
+        <!-- Password Strength Meter -->
+        @if (passwordControl?.value) {
+          <div class="password-strength">
+            <div class="strength-bars">
+              <div class="strength-bar" [class]="passwordStrength"></div>
+              <div class="strength-bar" [class]="passwordStrength === 'medium' || passwordStrength === 'strong' ? passwordStrength : ''"></div>
+              <div class="strength-bar" [class]="passwordStrength === 'strong' ? 'strong' : ''"></div>
+            </div>
+            <span class="strength-label" [class]="'strength-text-' + passwordStrength">
+              {{ passwordStrength | titlecase }}
+            </span>
+          </div>
+        }
+
+        @if (passwordInvalid) {
+          <div class="form-error">
+            <svg lucideAlertCircle [size]="12"></svg>
+            @if (passwordControl?.hasError('required')) { Password is required }
+            @else if (passwordControl?.hasError('minlength')) { Minimum 6 characters required }
+          </div>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn-auth-submit"
+        [disabled]="isLoading"
+        id="register-submit-btn"
+      >
+        @if (isLoading) {
+          <div class="spinner" style="width: 18px; height: 18px; border-width: 2px; border-color: #fff transparent transparent transparent;"></div>
+          Creating account...
+        } @else {
+          Create Account
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account?
+      <a routerLink="/login" id="go-to-login-link">Sign in instead</a>
+    </div>
+  </div>
+</div>

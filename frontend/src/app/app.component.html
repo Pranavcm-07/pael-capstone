@@ -1,0 +1,192 @@
+<!-- Global toast container -->
+<ngx-sonner-toaster richColors position="top-right" />
+
+<!-- AUTH PAGES: full page without sidebar -->
+@if (isAuthPage) {
+  <router-outlet />
+}
+
+<!-- AUTHENTICATED PAGES: sidebar shell layout -->
+@if (!isAuthPage) {
+  <div class="app-shell">
+
+    <!-- Sidebar overlay (mobile) -->
+    <div
+      class="sidebar-overlay"
+      [class.open]="sidebarOpen()"
+      (click)="closeSidebar()"
+      role="button"
+      aria-label="Close menu"
+    ></div>
+
+    <!-- ====== SIDEBAR ====== -->
+    <aside class="sidebar" [class.open]="sidebarOpen()" aria-label="Main navigation">
+
+      <!-- Sidebar Header / Brand -->
+      <div class="sidebar-header">
+        <a routerLink="/dashboard" class="sidebar-brand" (click)="closeSidebar()">
+          <div class="sidebar-brand-icon">
+            <svg lucideWallet [size]="18" color="white"></svg>
+          </div>
+          <span class="sidebar-brand-text">TRANSFO<span>.</span></span>
+        </a>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="sidebar-nav" aria-label="Main navigation links">
+        @if (!authService.isAdmin()) {
+          <div class="sidebar-section-label">Navigation</div>
+
+          <a
+            routerLink="/dashboard"
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="closeSidebar()"
+            id="nav-dashboard"
+          >
+            <svg lucideLayoutDashboard [size]="18" class="nav-link-icon"></svg>
+            Dashboard
+          </a>
+
+          <a
+            routerLink="/transfer"
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="closeSidebar()"
+            id="nav-transfer"
+          >
+            <svg lucideArrowLeftRight [size]="18" class="nav-link-icon"></svg>
+            Send Money
+          </a>
+
+          <a
+            routerLink="/history"
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="closeSidebar()"
+            id="nav-history"
+          >
+            <svg lucideHistory [size]="18" class="nav-link-icon"></svg>
+            History
+          </a>
+
+          <div class="sidebar-section-label">Insights</div>
+
+          <a
+            routerLink="/analytics"
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="closeSidebar()"
+            id="nav-analytics"
+          >
+            <svg lucideBarChart2 [size]="18" class="nav-link-icon"></svg>
+            Analytics
+          </a>
+
+          <a
+            routerLink="/rewards"
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="closeSidebar()"
+            id="nav-rewards"
+          >
+            <svg lucideStar [size]="18" class="nav-link-icon"></svg>
+            Rewards
+          </a>
+        }
+
+        @if (authService.isAdmin()) {
+          <div class="sidebar-section-label">Management</div>
+          <a
+            routerLink="/admin"
+            routerLinkActive="active"
+            class="nav-link"
+            (click)="closeSidebar()"
+            id="nav-admin"
+          >
+            <svg lucideShield [size]="18" class="nav-link-icon"></svg>
+            Admin Panel
+          </a>
+        }
+      </nav>
+
+      <!-- Sidebar Footer: User Profile -->
+      @if (authService.isLoggedIn()) {
+        <div class="sidebar-footer">
+          <div class="sidebar-user" (click)="logout()" id="sidebar-logout-btn" title="Click to logout" role="button">
+            <div class="sidebar-user-avatar">{{ userInitials }}</div>
+            <div class="sidebar-user-info">
+              <div class="sidebar-user-name">{{ username() || 'User' }}</div>
+              <div class="sidebar-user-role">Account Holder</div>
+            </div>
+            <svg lucideLogOut [size]="16" style="color: var(--color-danger); flex-shrink:0;"></svg>
+          </div>
+        </div>
+      }
+    </aside>
+
+    <!-- ====== MAIN AREA ====== -->
+    <div class="main-area">
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <!-- Mobile hamburger -->
+          <button
+            class="mobile-menu-btn"
+            (click)="toggleSidebar()"
+            id="mobile-menu-btn"
+            aria-label="Toggle sidebar"
+          >
+            @if (sidebarOpen()) {
+              <svg lucideX [size]="18"></svg>
+            } @else {
+              <svg lucideMenu [size]="18"></svg>
+            }
+          </button>
+          <h1 class="topbar-title">{{ pageTitle }}</h1>
+        </div>
+
+        <div class="topbar-right">
+          @if (authService.isLoggedIn()) {
+            <!-- Profile dropdown -->
+            <div class="profile-wrapper" style="position: relative;">
+              <button
+                class="profile-trigger-btn"
+                (click)="toggleProfile($event)"
+                id="topbar-profile-btn"
+                aria-label="User menu"
+              >
+                <div class="topbar-avatar">{{ userInitials }}</div>
+                <svg lucideChevronDown [size]="14" style="color: var(--color-primary);"></svg>
+              </button>
+
+              @if (profileOpen()) {
+                <div class="profile-dropdown animate-fade-in" (click)="$event.stopPropagation()">
+                  <div class="profile-dropdown-header">
+                    <div class="profile-dropdown-avatar">{{ userInitials }}</div>
+                    <div>
+                      <div class="profile-dropdown-name">{{ username() || 'User' }}</div>
+                      <div class="profile-dropdown-role">Account Holder</div>
+                    </div>
+                  </div>
+                  <div class="divider" style="margin: 0.5rem 0;"></div>
+                  <button class="profile-dropdown-item logout-item" (click)="logout()" id="topbar-logout-btn">
+                    <svg lucideLogOut [size]="15"></svg>
+                    Sign Out
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-content" id="main-content">
+        <router-outlet />
+      </main>
+    </div>
+
+  </div>
+}

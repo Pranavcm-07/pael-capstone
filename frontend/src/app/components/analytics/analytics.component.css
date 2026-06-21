@@ -1,0 +1,32 @@
+/* Analytics Component — Dark Mode */
+:host { display: block; }
+
+/* All card-like elements inside analytics get dark backgrounds */
+:host [hlmCard],
+:host .card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Text overrides for dark */
+:host .text-slate-900 { color: #f1f5f9 !important; }
+:host .text-slate-800 { color: #e2e8f0 !important; }
+:host .text-slate-700 { color: #cbd5e1 !important; }
+:host .text-slate-600 { color: #94a3b8 !important; }
+:host .text-slate-500 { color: #64748b !important; }
+:host .text-slate-400 { color: #475569 !important; }
+
+/* Background overrides */
+:host .bg-white,
+:host .bg-slate-50 { background: rgba(255,255,255,0.04) !important; }
+
+:host .border-slate-100,
+:host .border-slate-200 { border-color: rgba(255,255,255,0.08) !important; }
+
+/* Headings */
+:host h1, :host h2, :host h3, :host h4 { color: #f1f5f9 !important; }
+:host p { color: #64748b !important; }
+
+/* Chart containers */
+:host canvas { filter: brightness(0.95); }

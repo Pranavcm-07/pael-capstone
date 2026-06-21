@@ -1,22 +1,45 @@
-CREATE TABLE IF NOT EXISTS ACCOUNTS (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    holder_name VARCHAR(255) NOT NULL,
-    balance DECIMAL(19, 2) NOT NULL DEFAULT 0.00,
-    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-    version INT NOT NULL DEFAULT 0,
-    last_updated TIMESTAMP(6) NULL
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'ROLE_USER',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS TRANSACTION_LOGS (
-    id CHAR(36) PRIMARY KEY,
-    from_account_id BIGINT NOT NULL,
-    to_account_id BIGINT NOT NULL,
-    amount DECIMAL(19, 2) NOT NULL,
+CREATE TABLE accounts (
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    holder_name VARCHAR(255) NOT NULL,
+    balance DECIMAL(18,2) NOT NULL,
     status VARCHAR(20) NOT NULL,
-    failure_reason VARCHAR(500) NULL,
-    idempotency_key VARCHAR(255) NOT NULL,
-    created_on TIMESTAMP(6) NOT NULL,
-    CONSTRAINT uq_idempotency_key UNIQUE (idempotency_key),
-    INDEX idx_from_account_id (from_account_id),
-    INDEX idx_to_account_id (to_account_id)
+    version INT DEFAULT 0,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_accounts_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE transaction_logs (
+    id VARCHAR(36) PRIMARY KEY,
+    from_account BIGINT,
+    to_account BIGINT,
+    amount DECIMAL(18,2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    failure_reason VARCHAR(255),
+    idempotency_key VARCHAR(100) UNIQUE,
+    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_from_account FOREIGN KEY (from_account) REFERENCES accounts(id),
+    CONSTRAINT fk_to_account FOREIGN KEY (to_account) REFERENCES accounts(id)
+);
+
+CREATE TABLE reward_history (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    account_id BIGINT NOT NULL,
+    transaction_id VARCHAR(36) NOT NULL UNIQUE,
+    amount DECIMAL(18,2) NOT NULL,
+    points_earned INT NOT NULL,
+    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reward_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_reward_account FOREIGN KEY (account_id) REFERENCES accounts(id),
+    CONSTRAINT fk_reward_transaction FOREIGN KEY (transaction_id) REFERENCES transaction_logs(id)
+);
+

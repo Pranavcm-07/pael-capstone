@@ -1,0 +1,189 @@
+<!-- Dashboard — Dark Mode -->
+<div class="dash-wrapper">
+
+  <!-- ===== Welcome Banner ===== -->
+  <div class="dash-banner">
+    <div>
+      <h1 class="dash-title">Welcome Back</h1>
+      <p class="dash-subtitle">Here's a quick overview of your TRANSFO asset account</p>
+    </div>
+    @if (!isLoading()) {
+      <div class="dash-account-chip">
+        ACC-ID: <span class="dash-account-id">#{{ accountId() }}</span>
+      </div>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <!-- Loading Skeleton -->
+    <div class="dash-skeleton-grid">
+      <div class="dash-skeleton-card">
+        <div class="skeleton-line w-1-3"></div>
+        <div class="skeleton-line w-2-3 tall"></div>
+        <div class="skeleton-line w-1-2"></div>
+      </div>
+      <div class="dash-skeleton-main">
+        <div class="dash-skeleton-card">
+          <div class="skeleton-line w-1-4"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-full"></div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- ===== Main Dashboard Grid ===== -->
+    <div class="dashboard-grid">
+
+      <!-- LEFT: Card Wallet & Actions -->
+      <div class="dashboard-left">
+
+        <!-- 3D Credit Card -->
+        <div class="perspective-container">
+          <div class="debit-card-3d" (click)="toggleBalanceVisibility()">
+            <div class="card-brand">
+              <span class="card-logo">TRANSFO.</span>
+              <div class="card-chip"></div>
+            </div>
+
+            <div class="card-balance-section">
+              <div class="card-balance-label">
+                Available Balance
+                <button
+                  type="button"
+                  style="background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;padding:0;display:flex;align-items:center;"
+                  (click)="$event.stopPropagation(); toggleBalanceVisibility()"
+                  aria-label="Toggle balance display"
+                >
+                  @if (balanceVisible()) {
+                    <svg lucideEye [size]="14"></svg>
+                  } @else {
+                    <svg lucideEyeOff [size]="14"></svg>
+                  }
+                </button>
+              </div>
+              <div class="card-balance-value">
+                @if (balanceVisible()) {
+                  {{ balance() | currency:'USD':'symbol':'1.2-2' }}
+                } @else {
+                  ••••••••
+                }
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div class="card-holder">
+                <span class="card-holder-label">Card Holder</span>
+                <span class="card-holder-name">{{ holderName() }}</span>
+              </div>
+              <span class="card-number">•••• #{{ accountId() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-action-bubbles">
+          <a routerLink="/transfer" class="action-bubble" id="action-send">
+            <div class="action-bubble-icon">
+              <svg lucideSend [size]="18"></svg>
+            </div>
+            <span>Send</span>
+          </a>
+          <a routerLink="/history" class="action-bubble" id="action-history">
+            <div class="action-bubble-icon">
+              <svg lucideHistory [size]="18"></svg>
+            </div>
+            <span>History</span>
+          </a>
+          <a routerLink="/analytics" class="action-bubble" id="action-analytics">
+            <div class="action-bubble-icon">
+              <svg lucideBarChart2 [size]="18"></svg>
+            </div>
+            <span>Insights</span>
+          </a>
+          <a routerLink="/rewards" class="action-bubble" id="action-rewards">
+            <div class="action-bubble-icon">
+              <svg lucideStar [size]="18"></svg>
+            </div>
+            <span>Rewards</span>
+          </a>
+        </div>
+
+        <!-- Reward Points Widget -->
+        <div class="stat-widget">
+          <div class="stat-widget-info">
+            <span class="stat-widget-label">Loyalty Reward Points</span>
+            <span class="stat-widget-value">{{ totalRewardPoints() }} pts</span>
+          </div>
+          <div class="stat-widget-star">
+            <svg lucideStar [size]="20" fill="currentColor"></svg>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Activity Timeline -->
+      <div class="dashboard-right">
+        <div class="section-header">
+          <h2>Activity Timeline</h2>
+          <a routerLink="/history">View All</a>
+        </div>
+
+        @if (recentTransactions().length === 0) {
+          <div class="timeline-empty">
+            <div class="timeline-empty-icon">
+              <svg lucideHistory [size]="24"></svg>
+            </div>
+            <h3>No transaction history</h3>
+            <p>You haven't initiated or received any transfers yet.</p>
+          </div>
+        } @else {
+          <div class="timeline-stream">
+            <div class="timeline-group">
+              <div class="timeline-header">Recent Transactions</div>
+
+              <div class="timeline-item" *ngFor="let tx of recentTransactions()">
+                <div class="timeline-item-left">
+                  <div class="timeline-icon-badge"
+                    [class.sent]="tx.direction === 'sent'"
+                    [class.received]="tx.direction === 'received'">
+                    @if (tx.direction === 'sent') {
+                      <svg lucideArrowUpRight [size]="16"></svg>
+                    } @else {
+                      <svg lucideArrowDownLeft [size]="16"></svg>
+                    }
+                  </div>
+                  <div>
+                    <div class="timeline-item-title">
+                      {{ tx.direction === 'sent' ? 'Transfer to ' : 'Received from ' }}
+                      <strong>{{ tx.otherPartyName || 'Unknown User' }}</strong>
+                    </div>
+                    <div class="timeline-item-time">
+                      {{ tx.createdOn | date:'dd MMM yyyy, hh:mm a' }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="timeline-item-right">
+                  <span class="timeline-amount"
+                    [class.received]="tx.direction === 'received'"
+                    [class.sent]="tx.direction === 'sent'">
+                    {{ tx.direction === 'sent' ? '-' : '+' }}{{ tx.amount | currency:'USD' }}
+                  </span>
+                  <span class="timeline-badge"
+                    [class.success]="tx.status === 'SUCCESS'"
+                    [class.failed]="tx.status !== 'SUCCESS'">
+                    {{ tx.status }}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

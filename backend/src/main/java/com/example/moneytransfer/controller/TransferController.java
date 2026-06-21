@@ -4,12 +4,8 @@ import com.example.moneytransfer.dto.TransferRequest;
 import com.example.moneytransfer.dto.TransferResponse;
 import com.example.moneytransfer.service.TransferService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/transfers")
@@ -20,10 +16,9 @@ public class TransferController {
     public TransferController(TransferService transferService) {
         this.transferService = transferService;
     }
-
     @PostMapping
-    public ResponseEntity<TransferResponse> createTransfer(@Valid @RequestBody TransferRequest request) {
-        TransferResponse response = transferService.transfer(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<TransferResponse> executeTransfer(@Valid @RequestBody TransferRequest request, java.security.Principal principal) {
+        TransferResponse response = transferService.transfer(request, principal.getName());
+        return ResponseEntity.ok(response);
     }
 }

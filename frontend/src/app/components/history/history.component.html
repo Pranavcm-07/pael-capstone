@@ -1,0 +1,101 @@
+<div>
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Transaction History</h1>
+    <p class="page-subtitle">Review, filter, and track all your financial transfers.</p>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="filter-search-wrapper">
+      <svg lucideSearch [size]="18" class="filter-search-icon"></svg>
+      <input type="text" [ngModel]="searchText()" (ngModelChange)="onSearchChange($event)"
+        placeholder="Search by recipient or sender..." class="filter-input" />
+    </div>
+
+    <div class="filter-selects">
+      <select [ngModel]="statusFilter()" (ngModelChange)="onStatusChange($event)" class="filter-select"
+        id="status-filter-select" aria-label="Filter by transaction status">
+        <option value="all">All Status</option>
+        <option value="SUCCESS">Success</option>
+        <option value="FAILED">Failed</option>
+      </select>
+
+      <select [ngModel]="directionFilter()" (ngModelChange)="onDirectionChange($event)" class="filter-select"
+        id="direction-filter-select" aria-label="Filter by transaction direction">
+        <option value="all">All Transactions</option>
+        <option value="sent">Sent</option>
+        <option value="received">Received</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    @if (isLoading()) {
+    <div class="skeleton-rows">
+      <div class="sk-row" *ngFor="let i of [1,2,3,4,5]"></div>
+    </div>
+    } @else {
+    @if (filteredTransactions().length === 0) {
+    <div class="history-empty">
+      <div class="history-empty-icon">
+        <svg lucideHistory [size]="30"></svg>
+      </div>
+      <h3>No transactions found</h3>
+      <p>No transfers match your filters. Try adjusting the search criteria or make a new transfer.</p>
+      <a routerLink="/transfer" class="history-empty-btn">
+        <svg lucideSend [size]="15"></svg>
+        Send Money Now
+      </a>
+    </div>
+    } @else {
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Transaction</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date &amp; Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tx of filteredTransactions()">
+          <td>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div class="tx-dir-icon" [class.sent]="tx.direction === 'sent'"
+                [class.received]="tx.direction === 'received'">
+                @if (tx.direction === 'sent') {
+                <svg lucideArrowUpRight [size]="14"></svg>
+                } @else {
+                <svg lucideArrowDownLeft [size]="14"></svg>
+                }
+              </div>
+              <div>
+                <div class="tx-party-name">{{ tx.otherPartyName || 'Unknown User' }}</div>
+                <div class="tx-party-id">ID: {{ tx.otherPartyId }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="tx-amount" [class.sent]="tx.direction === 'sent'"
+              [class.received]="tx.direction === 'received'">
+              {{ tx.direction === 'sent' ? '-' : '+' }}{{ tx.amount | currency:'USD' }}
+            </span>
+          </td>
+          <td>
+            <span class="tx-status-badge" [class.success]="tx.status === 'SUCCESS'"
+              [class.failed]="tx.status !== 'SUCCESS'">
+              {{ tx.status }}
+            </span>
+          </td>
+          <td>
+            <span class="tx-date">{{ tx.createdOn | date:'dd MMM yyyy, hh:mm a' }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    }
+    }
+  </div>
+</div>
