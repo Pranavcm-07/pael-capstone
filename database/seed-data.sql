@@ -1,11 +1,13 @@
-INSERT INTO ACCOUNTS (holder_name, balance, status, version, last_updated)
-SELECT 'Alice Smith', 5000.00, 'ACTIVE', 0, CURRENT_TIMESTAMP
-WHERE NOT EXISTS (SELECT 1 FROM ACCOUNTS LIMIT 1);
+-- Passwords are 'password'
+INSERT INTO users (username, password, role) VALUES
+('alice', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_USER'),
+('bob', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_USER'),
+('charlie', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_USER'),
+('admin', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_ADMIN');
 
-INSERT INTO ACCOUNTS (holder_name, balance, status, version, last_updated)
-SELECT 'Bob Jones', 3500.50, 'ACTIVE', 0, CURRENT_TIMESTAMP
-WHERE (SELECT COUNT(*) FROM ACCOUNTS) < 2;
+INSERT INTO accounts (id, user_id, holder_name, balance, status) VALUES
+  (87654321, 1, 'Alice', 10000.00, 'ACTIVE'),
+  (12345678, 2, 'Bob', 5000.00, 'ACTIVE'),
+  (98765432, 3, 'Charlie', 2500.00, 'LOCKED'),
+  (11223344, 4, 'Admin', 0.00, 'ACTIVE');
 
-INSERT INTO ACCOUNTS (holder_name, balance, status, version, last_updated)
-SELECT 'Carol White', 10000.00, 'ACTIVE', 0, CURRENT_TIMESTAMP
-WHERE (SELECT COUNT(*) FROM ACCOUNTS) < 3;

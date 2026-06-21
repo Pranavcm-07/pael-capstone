@@ -1,0 +1,951 @@
+<div class="admin-container animate-fade-in">
+  <!-- Admin Header -->
+  <div class="admin-header">
+    <div class="admin-title-section">
+      <div class="admin-icon-wrapper">
+        <svg lucideShield [size]="24" class="text-primary"></svg>
+      </div>
+      <div>
+        <h2>System Administration — TRANSFO</h2>
+        <p>Monitor transactions, audit database tables, adjust bank balances, and manage user roles.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Menu (Top Horizontal Tabs) -->
+  <div class="admin-tabs">
+    <button [class.active]="currentTab() === 'dashboard'" (click)="setTab('dashboard')">
+      <svg lucideActivity [size]="16"></svg>
+      Overview
+    </button>
+    <button [class.active]="currentTab() === 'users'" (click)="setTab('users')" id="admin-tab-users">
+      <svg lucideUsers [size]="16"></svg>
+      Users
+    </button>
+    <button [class.active]="currentTab() === 'wallet'" (click)="setTab('wallet')" id="admin-tab-wallet">
+      <svg lucideWallet [size]="16"></svg>
+      Wallet Management
+    </button>
+    <button [class.active]="currentTab() === 'transactions'" (click)="setTab('transactions')"
+      id="admin-tab-transactions">
+      <svg lucideHistory [size]="16"></svg>
+      Transactions
+    </button>
+    <button [class.active]="currentTab() === 'console'" (click)="setTab('console')" id="admin-tab-console">
+      <svg lucideDatabase [size]="16"></svg>
+      Query Console
+    </button>
+    <button [class.active]="currentTab() === 'audits'" (click)="setTab('audits')" id="admin-tab-audits">
+      <svg lucideLock [size]="16"></svg>
+      Audit Logs
+    </button>
+    <button [class.active]="currentTab() === 'reports'" (click)="setTab('reports')" id="admin-tab-reports">
+      <svg lucideActivity [size]="16"></svg>
+      Reports
+    </button>
+    <button [class.active]="currentTab() === 'rewards'" (click)="setTab('rewards')" id="admin-tab-rewards">
+      <svg lucideStar [size]="16"></svg>
+      Rewards
+    </button>
+    <button [class.active]="currentTab() === 'settings'" (click)="setTab('settings')" id="admin-tab-settings">
+      <svg lucideSettings [size]="16"></svg>
+      Settings
+    </button>
+  </div>
+
+  <!-- ====== MAIN CONTENT PANES ====== -->
+  @if (isLoading() && currentTab() !== 'console') {
+  <div class="admin-loading" style="text-align: center; padding: 3rem 0;">
+    <div class="spinner" style="margin: 0 auto 1rem;"></div>
+    <p>Loading administration data...</p>
+  </div>
+  } @else {
+
+  <!-- 1. DASHBOARD OVERVIEW TAB -->
+  @if (currentTab() === 'dashboard') {
+  <div class="tab-content animate-fade-in space-y-6">
+    <!-- Overview Stats Grid -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Users</span>
+          <div class="metric-icon-bg primary">
+            <svg lucideUsers [size]="18"></svg>
+          </div>
+        </div>
+        <div class="metric-value">{{ stats()?.totalUsers || 0 }}</div>
+        <div class="metric-subtext">Registered user profiles</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Transactions</span>
+          <div class="metric-icon-bg success">
+            <svg lucideHistory [size]="18"></svg>
+          </div>
+        </div>
+        <div class="metric-value">{{ stats()?.totalTransactions || 0 }}</div>
+        <div class="metric-subtext">Success: {{ stats()?.successTransactions || 0 }} | Failed: {{
+          stats()?.failedTransactions || 0 }}</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Asset Pool</span>
+          <div class="metric-icon-bg primary">
+            <svg lucideWallet [size]="18"></svg>
+          </div>
+        </div>
+        <div class="metric-value">{{ (stats()?.totalBalances || 0) | currency }}</div>
+        <div class="metric-subtext">Sum total of user deposits</div>
+      </div>
+    </div>
+
+    <!-- Database Engine Metadata card -->
+    @if (dbMetadata()) {
+    <div class="card db-summary-card">
+      <div class="card-header" style="margin-bottom: 1rem;">
+        <h3 class="card-title">Database Core Information</h3>
+      </div>
+      <div class="db-details-grid">
+        <div class="db-detail-item">
+          <span class="db-detail-label">Engine Vendor</span>
+          <span class="db-detail-val">{{ dbMetadata()?.databaseProductName }}</span>
+        </div>
+        <div class="db-detail-item">
+          <span class="db-detail-label">Engine Version</span>
+          <span class="db-detail-val">{{ dbMetadata()?.databaseProductVersion }}</span>
+        </div>
+        <div class="db-detail-item">
+          <span class="db-detail-label">Driver Details</span>
+          <span class="db-detail-val">{{ dbMetadata()?.driverName }} (v{{ dbMetadata()?.driverVersion }})</span>
+        </div>
+        <div class="db-detail-item">
+          <span class="db-detail-label">Connection URL</span>
+          <span class="db-detail-val select-all">{{ dbMetadata()?.url }}</span>
+        </div>
+        <div class="db-detail-item">
+          <span class="db-detail-label">DB Username</span>
+          <span class="db-detail-val">{{ dbMetadata()?.username }}</span>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- 2. USERS TAB -->
+  @if (currentTab() === 'users') {
+  <div class="tab-content animate-fade-in">
+    <div class="details-split-view" style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+      <!-- Left side: list of users -->
+      <div class="card table-card">
+        <div class="search-bar" style="margin-bottom: 1rem;">
+          <div class="search-input-wrapper" style="position: relative; display: flex; align-items: center;">
+            <svg lucideSearch [size]="16" class="search-icon"
+              style="position: absolute; left: 0.875rem; color: hsl(var(--muted-foreground));"></svg>
+            <input type="text" placeholder="Search users by name or role..." [ngModel]="userSearch()"
+              (ngModelChange)="userSearch.set($event)" class="form-input search-control"
+              style="padding-left: 2.5rem; width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 10px;" />
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of filteredUsers(); track user.id) {
+              <tr class="hover:bg-slate-50/50 cursor-pointer" (click)="viewUserDetails(user)">
+                <td><strong>#{{ user.id }}</strong></td>
+                <td>{{ user.username }}</td>
+                <td>
+                  <span class="badge" [class.badge-success]="user.role === 'ROLE_ADMIN'"
+                    [class.badge-neutral]="user.role !== 'ROLE_ADMIN'">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td>{{ user.createdAt | date:'short' }}</td>
+                <td style="text-align: right;" (click)="$event.stopPropagation()">
+                  <button class="btn btn-sm btn-outline-primary" (click)="openEditRole(user)">
+                    Role
+                  </button>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="5" class="text-center">No users matched search criteria.</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right side: details card -->
+      @if (selectedUser()) {
+      <div class="card animate-fade-in" style="height: fit-content; padding: 1.5rem;">
+        <div class="flex justify-between items-center"
+          style="margin-bottom: 1rem; border-bottom: 1px solid hsl(var(--border)); padding-bottom: 0.75rem;">
+          <h3 style="font-size: 1rem; font-weight: 800;">User Profile Details</h3>
+          <button class="text-slate-400 hover:text-slate-600 font-bold" (click)="closeUserDetails()">&times;</button>
+        </div>
+
+        <div class="space-y-4 text-sm">
+          <div>
+            <span class="text-xs text-slate-400 font-semibold uppercase block">Username</span>
+            <div class="font-bold text-slate-800 text-base mt-0.5">{{ selectedUser()?.username }}</div>
+          </div>
+
+          <div>
+            <span class="text-xs text-slate-400 font-semibold uppercase block">Profile ID</span>
+            <div class="font-semibold text-slate-700 mt-0.5">#{{ selectedUser()?.id }}</div>
+          </div>
+
+          <div>
+            <span class="text-xs text-slate-400 font-semibold uppercase block">Access Authority</span>
+            <div class="mt-1">
+              <span class="badge" [class.badge-success]="selectedUser()?.role === 'ROLE_ADMIN'"
+                [class.badge-neutral]="selectedUser()?.role !== 'ROLE_ADMIN'">
+                {{ selectedUser()?.role }}
+              </span>
+            </div>
+          </div>
+
+          @if (selectedUser()?.account) {
+          <div class="border-t border-slate-100 pt-3 mt-3">
+            <span class="text-xs text-slate-400 font-semibold uppercase block">Linked Account</span>
+            <div class="mt-2 space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <div>
+                <span class="text-[10px] text-slate-400 font-semibold">Account ID</span>
+                <div class="font-mono font-bold text-slate-700 mt-0.5">#{{ selectedUser()?.account?.id }}</div>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 font-semibold">Wallet Balance</span>
+                <div class="font-bold text-green-700 text-sm mt-0.5">{{ selectedUser()?.account?.balance | currency }}
+                </div>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 font-semibold">Status</span>
+                <div class="mt-1">
+                  <span class="badge" [class.badge-success]="selectedUser()?.account?.status === 'ACTIVE'"
+                    [class.badge-danger]="selectedUser()?.account?.status === 'LOCKED'">
+                    {{ selectedUser()?.account?.status }}
+                  </span>
+                </div>
+              </div>
+
+              <button class="btn btn-sm btn-full mt-3" [class.btn-danger]="selectedUser()?.account?.status === 'ACTIVE'"
+                [class.btn-primary]="selectedUser()?.account?.status !== 'ACTIVE'"
+                (click)="toggleLockAccount(selectedUser()?.account)">
+                {{ selectedUser()?.account?.status === 'ACTIVE' ? 'Disable User Account' : 'Enable User Account' }}
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- 3. WALLET MANAGEMENT TAB -->
+  @if (currentTab() === 'wallet') {
+  <div class="tab-content animate-fade-in">
+    <div class="card table-card">
+      <div class="search-bar" style="margin-bottom: 1rem;">
+        <div class="search-input-wrapper" style="position: relative; display: flex; align-items: center;">
+          <svg lucideSearch [size]="16" class="search-icon"
+            style="position: absolute; left: 0.875rem; color: hsl(var(--muted-foreground));"></svg>
+          <input type="text" placeholder="Search accounts by holder, username, or account ID..."
+            [ngModel]="walletSearch()" (ngModelChange)="walletSearch.set($event)" class="form-input search-control"
+            style="padding-left: 2.5rem; width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 10px;" />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Account ID</th>
+              <th>Holder Name</th>
+              <th>Username</th>
+              <th>Current Balance</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (acc of filteredWalletBalances(); track acc.id) {
+            <tr>
+              <td><strong>#{{ acc.id }}</strong></td>
+              <td>{{ acc.holderName }}</td>
+              <td>{{ acc.username }}</td>
+              <td class="font-bold text-slate-800">{{ acc.balance | currency }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="acc.status === 'ACTIVE'"
+                  [class.badge-danger]="acc.status === 'LOCKED'">
+                  {{ acc.status }}
+                </span>
+              </td>
+              <td style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button class="btn btn-sm btn-outline-primary" (click)="openFundingModal(acc, 'add')"
+                  [disabled]="acc.status !== 'ACTIVE'">
+                  + Credit
+                </button>
+                <button class="btn btn-sm btn-neutral" (click)="openFundingModal(acc, 'deduct')"
+                  [disabled]="acc.status !== 'ACTIVE'">
+                  - Debit
+                </button>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="6" class="text-center">No accounts matched search criteria.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- 4. TRANSACTIONS TAB -->
+  @if (currentTab() === 'transactions') {
+  <div class="tab-content animate-fade-in">
+    <div class="card table-card">
+      <div class="search-control-group" style="display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <div class="search-input-wrapper" style="position: relative; display: flex; align-items: center; flex: 1;">
+          <svg lucideSearch [size]="16" class="search-icon"
+            style="position: absolute; left: 0.875rem; color: hsl(var(--muted-foreground));"></svg>
+          <input type="text" placeholder="Search transactions by sender, receiver, ID..." [ngModel]="txSearch()"
+            (ngModelChange)="txSearch.set($event)" class="form-input search-control"
+            style="padding-left: 2.5rem; width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 10px;" />
+        </div>
+
+        <select [ngModel]="txStatusFilter()" (ngModelChange)="txStatusFilter.set($event)"
+          style="height: 40px; border: 1px solid hsl(var(--border)); border-radius: 10px; padding: 0 1rem; background: hsl(var(--muted)); color: hsl(var(--foreground)); outline: none;">
+          <option value="ALL">All Status</option>
+          <option value="SUCCESS">Success Only</option>
+          <option value="FAILED">Failed Only</option>
+        </select>
+
+        <input type="date" [ngModel]="txDateFilter()" (ngModelChange)="txDateFilter.set($event)"
+          style="height: 40px; border: 1px solid hsl(var(--border)); border-radius: 10px; padding: 0 1rem; background: hsl(var(--muted)); color: hsl(var(--foreground)); outline: none;" />
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Sender</th>
+              <th>Receiver</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of filteredTransactions(); track tx.id) {
+            <tr>
+              <td class="font-mono text-xs font-semibold" title="{{ tx.id }}">{{ tx.id.substring(0, 8) }}...</td>
+              <td>
+                <div>{{ tx.fromAccountHolderName }}</div>
+                <small class="text-slate-400">#{{ tx.fromAccountId }}</small>
+              </td>
+              <td>
+                <div>{{ tx.toAccountHolderName }}</div>
+                <small class="text-slate-400">#{{ tx.toAccountId }}</small>
+              </td>
+              <td><strong>{{ tx.amount | currency }}</strong></td>
+              <td>
+                <span class="badge" [class.badge-success]="tx.status === 'SUCCESS'"
+                  [class.badge-danger]="tx.status !== 'SUCCESS'">
+                  {{ tx.status }}
+                </span>
+              </td>
+              <td>{{ tx.createdOn | date:'short' }}</td>
+              <td style="text-align: right;">
+                <button class="btn btn-sm btn-neutral" (click)="viewTransactionDetails(tx)">
+                  Details
+                </button>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="7" class="text-center">No transactions logged.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- 5. QUERY CONSOLE TAB -->
+  @if (currentTab() === 'console') {
+  <div class="tab-content animate-fade-in space-y-6">
+    <!-- System Database Tables Overview -->
+    @if (dbMetadata()) {
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header" style="margin-bottom: 1.25rem;">
+        <h3 class="card-title">System Database Tables Overview</h3>
+        <p class="card-subtitle">Detailed record counts of active tables inside the database.</p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Table Name</th>
+              <th>Estimated Record Count</th>
+              <th>Usage Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (table of dbMetadata()?.tables; track table.tableName) {
+            <tr>
+              <td><strong>{{ table.tableName }}</strong></td>
+              <td>
+                <span class="badge badge-info" style="font-size: 0.8125rem; padding: 0.25rem 0.75rem;">
+                  {{ table.rowCount }} records
+                </span>
+              </td>
+              <td>
+                @if (table.tableName === 'users') {
+                Stores registered user credentials, passwords (hashed), and login roles.
+                } @else if (table.tableName === 'accounts') {
+                Contains user savings/checking account balance, current status (Active/Locked), and optimistic lock
+                versioning.
+                } @else if (table.tableName === 'transaction_logs') {
+                Logs all money transfer transactions, status (Success/Failed), error logs, and idempotency keys.
+                } @else if (table.tableName === 'reward_history') {
+                Audit log for cashback reward points earned by users for successful transactions.
+                } @else if (table.tableName === 'account_status_audit') {
+                Audit history recording any changes made to account statuses, audit logs, and reasonings.
+                } @else {
+                Application support entity table.
+                }
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="3" class="text-center">Unable to load database table details.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    <!-- Interactive SQL Console -->
+    <div class="card">
+      <div class="card-header" style="margin-bottom: 1rem;">
+        <h3 class="card-title">Interactive SQL Console</h3>
+        <p class="card-subtitle">Execute safe SELECT queries to inspect live tables in real-time. Modifying statements
+          are blocked.</p>
+      </div>
+
+      <div class="sql-console-wrapper">
+        <div class="textarea-wrapper">
+          <textarea class="sql-editor" [ngModel]="sqlQuery()" (ngModelChange)="sqlQuery.set($event)" rows="4"
+            placeholder="SELECT id, username, role FROM users LIMIT 10"></textarea>
+        </div>
+
+        <div class="sql-actions">
+          <button class="btn btn-primary" (click)="executeQuery()" [disabled]="queryLoading()">
+            @if (!queryLoading()) {
+            <svg lucidePlay [size]="14"></svg>
+            } @else {
+            <div class="spinner inline"></div>
+            }
+            Execute SQL Query
+          </button>
+          <div class="sql-tips">
+            <span>Tables: <code>users</code>, <code>accounts</code>, <code>transaction_logs</code>,
+              <code>reward_history</code>, <code>account_status_audit</code></span>
+          </div>
+        </div>
+
+        <!-- Query Error banner -->
+        @if (queryError()) {
+        <div class="auth-error-banner animate-fade-in" style="margin-top: 1rem;">
+          <svg lucideAlertCircle [size]="16" style="flex-shrink:0;"></svg>
+          <span>{{ queryError() }}</span>
+        </div>
+        }
+
+        <!-- Query Output Area -->
+        @if (queryRows().length > 0) {
+        <div class="query-results-wrapper animate-fade-in" style="margin-top: 1.5rem;">
+          <h4 style="font-size: 0.875rem; font-weight: 600; color: hsl(var(--foreground)); margin-bottom: 0.75rem;">
+            Query Results ({{ queryRows().length }} rows returned)
+          </h4>
+          <div class="table-responsive results-table-container">
+            <table class="data-table results-table">
+              <thead>
+                <tr>
+                  @for (col of queryColumns(); track col) {
+                  <th>{{ col }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of queryRows(); track $index) {
+                <tr>
+                  @for (col of queryColumns(); track col) {
+                  <td>{{ row[col] !== null ? row[col] : 'NULL' }}</td>
+                  }
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        } @else if (!queryError() && !queryLoading() && queryColumns().length > 0) {
+        <div class="query-empty-results animate-fade-in" style="margin-top: 1rem;">
+          <p>Query executed successfully, but returned 0 rows.</p>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- 6. AUDIT LOGS TAB -->
+  @if (currentTab() === 'audits') {
+  <div class="tab-content animate-fade-in">
+    <div class="card table-card">
+      <div class="search-bar" style="margin-bottom: 1rem;">
+        <div class="search-input-wrapper" style="position: relative; display: flex; align-items: center;">
+          <svg lucideSearch [size]="16" class="search-icon"
+            style="position: absolute; left: 0.875rem; color: hsl(var(--muted-foreground));"></svg>
+          <input type="text" placeholder="Search status audits by Account ID, admin user, or reason..."
+            [ngModel]="auditSearch()" (ngModelChange)="auditSearch.set($event)" class="form-input search-control"
+            style="padding-left: 2.5rem; width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 10px;" />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Audit ID</th>
+              <th>Account ID</th>
+              <th>Previous Status</th>
+              <th>Target Status</th>
+              <th>Operation Reason</th>
+              <th>Changed By</th>
+              <th>Audit Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (audit of filteredAudits(); track audit.id) {
+            <tr>
+              <td><strong>#{{ audit.id }}</strong></td>
+              <td><strong>#{{ audit.accountId }}</strong></td>
+              <td>
+                @if (audit.oldStatus) {
+                <span class="badge badge-neutral">{{ audit.oldStatus }}</span>
+                } @else {
+                <span class="text-muted">N/A</span>
+                }
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="audit.newStatus === 'ACTIVE'"
+                  [class.badge-danger]="audit.newStatus === 'LOCKED'">
+                  {{ audit.newStatus }}
+                </span>
+              </td>
+              <td style="max-width: 250px;" class="text-ellipsis" title="{{ audit.reason }}">
+                {{ audit.reason }}
+              </td>
+              <td>{{ audit.changedBy }}</td>
+              <td>{{ audit.createdOn | date:'medium' }}</td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="7" class="text-center">No audit logs matched search criteria.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- 7. REPORTS TAB -->
+  @if (currentTab() === 'reports') {
+  <div class="tab-content animate-fade-in space-y-6">
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Transfers Count</span>
+          <div class="metric-icon-bg primary">
+            <svg lucideActivity [size]="18"></svg>
+          </div>
+        </div>
+        <div class="metric-value">{{ reportsData()?.totalTransfers || 0 }}</div>
+        <div class="metric-subtext">Aggregated successful settled logs</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Capital Moved</span>
+          <div class="metric-icon-bg success">
+            <svg lucideWallet [size]="18"></svg>
+          </div>
+        </div>
+        <div class="metric-value">{{ (reportsData()?.totalMoneyMoved || 0) | currency }}</div>
+        <div class="metric-subtext">Sum total of liquidity transferred</div>
+      </div>
+    </div>
+
+    <!-- Daily settlement summaries table -->
+    <div class="card">
+      <div class="card-header" style="margin-bottom: 1.25rem;">
+        <h3 class="card-title">Daily Settlements Summary</h3>
+        <p class="card-subtitle">Daily settlements grouped by transaction counts and volume sums</p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Settlement Date</th>
+              <th>Transfers Settled</th>
+              <th style="text-align: right;">Total Daily Volume</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (day of reportsData()?.dailySummary; track day.date) {
+            <tr>
+              <td><strong>{{ day.date }}</strong></td>
+              <td>{{ day.count }} transfers</td>
+              <td class="font-bold text-slate-800" style="text-align: right;">{{ day.amount | currency }}</td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="3" class="text-center">No historical summaries found.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- 8. SETTINGS TAB -->
+  @if (currentTab() === 'settings') {
+  <div class="tab-content animate-fade-in">
+    <div class="card" style="padding: 2rem;">
+      <div class="card-header" style="margin-bottom: 1.5rem;">
+        <h3 class="card-title">System Settings Configuration</h3>
+        <p class="card-subtitle">Configure minimum/maximum transfer thresholds and lock global transfers functionality
+        </p>
+      </div>
+
+      <form (ngSubmit)="saveSettings()" class="space-y-4" style="max-width: 480px;">
+        <div class="form-group">
+          <label class="form-label" for="setting-min-amount"
+            style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">
+            Minimum Single Transfer Amount (USD)
+          </label>
+          <input type="number" id="setting-min-amount" class="form-input" [ngModel]="minTransferAmount()"
+            (ngModelChange)="minTransferAmount.set($event)" step="0.01" min="0" required
+            style="width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 8px; padding: 0 0.75rem;" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-max-amount"
+            style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">
+            Maximum Single Transfer Amount (USD)
+          </label>
+          <input type="number" id="setting-max-amount" class="form-input" [ngModel]="maxTransferAmount()"
+            (ngModelChange)="maxTransferAmount.set($event)" step="0.01" min="0.01" required
+            style="width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 8px; padding: 0 0.75rem;" />
+        </div>
+
+        <div class="flex items-center gap-2.5 py-2"
+          style="display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0;">
+          <input type="checkbox" id="setting-enabled-checkbox" [ngModel]="transfersEnabled()"
+            (ngModelChange)="transfersEnabled.set($event)"
+            class="w-4 h-4 text-green-600 border-slate-300 rounded focus:ring-green-500" />
+          <label for="setting-enabled-checkbox" class="text-sm font-semibold text-slate-700" style="cursor: pointer;">
+            Enable globally user-to-user transfers
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="height: 40px; padding: 0 1.5rem;">
+          Save Settings
+        </button>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- 9. REWARDS MANAGEMENT TAB -->
+  @if (currentTab() === 'rewards') {
+  <div class="tab-content animate-fade-in space-y-6">
+    <div class="card table-card">
+      <div class="card-header"
+        style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h3 class="card-title">User Reward Points Management</h3>
+          <p class="card-subtitle">View, credit, or debit reward points for each customer profile.</p>
+        </div>
+
+        <div class="search-input-wrapper" style="position: relative; display: flex; align-items: center; width: 300px;">
+          <svg lucideSearch [size]="16" class="search-icon"
+            style="position: absolute; left: 0.875rem; color: hsl(var(--muted-foreground));"></svg>
+          <input type="text" placeholder="Search user or account name..." [ngModel]="rewardsSearch()"
+            (ngModelChange)="rewardsSearch.set($event)" class="form-input search-control"
+            style="padding-left: 2.5rem; width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 10px;" />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Username</th>
+              <th>Account Holder</th>
+              <th>Account ID</th>
+              <th>Current Reward Points</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of filteredRewards(); track r.id) {
+            <tr>
+              <td>#{{ r.id }}</td>
+              <td><span class="font-semibold">{{ r.username }}</span></td>
+              <td>{{ r.holderName }}</td>
+              <td>{{ r.accountId ? '#' + r.accountId : 'N/A' }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="r.points > 0" [class.badge-neutral]="r.points === 0"
+                  [class.badge-danger]="r.points < 0">
+                  {{ r.points }} pts
+                </span>
+              </td>
+              <td style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button class="btn btn-sm btn-primary" (click)="openAdjustRewardsModal(r, 'add')"
+                  [disabled]="!r.accountId" style="font-size: 0.75rem; height: 32px; padding: 0 0.75rem;">
+                  + Add Points
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="openAdjustRewardsModal(r, 'deduct')"
+                  [disabled]="!r.accountId || r.points <= 0"
+                  style="font-size: 0.75rem; height: 32px; padding: 0 0.75rem;">
+                  - Deduct Points
+                </button>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 3rem 0; color: hsl(var(--muted-foreground));">
+                No customer reward points records found.
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  }
+
+  }
+</div>
+
+<!-- ============================================================
+MODALS
+============================================================ -->
+
+<!-- 1. Modify User Role Modal -->
+@if (editingUser()) {
+<div class="modal-overlay animate-fade-in">
+  <div class="modal-card animate-scale-in">
+    <div class="modal-header">
+      <h3 class="modal-title">Modify User System Role</h3>
+      <button class="modal-close-btn" (click)="closeEditRole()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-description">Change the login authorities and dashboard permissions for user <strong>{{
+          editingUser()?.username }}</strong> (User #{{ editingUser()?.id }}).</p>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label" for="user-role-select">Select Access Level</label>
+        <select id="user-role-select" class="form-input" [ngModel]="editingUserRole()"
+          (ngModelChange)="editingUserRole.set($event)">
+          <option value="ROLE_USER">Standard Customer (ROLE_USER)</option>
+          <option value="ROLE_ADMIN">System Administrator (ROLE_ADMIN)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-neutral" (click)="closeEditRole()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveUserRole()">Save Role</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- 2. Wallet Funding credit/debit Modal -->
+@if (fundingAccount()) {
+<div class="modal-overlay animate-fade-in">
+  <div class="modal-card animate-scale-in">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ fundingAction() === 'add' ? 'Credit Wallet Funds' : 'Debit Wallet Funds' }}</h3>
+      <button class="modal-close-btn" (click)="closeFundingModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-description">
+        Perform a direct adjustment on Account #{{ fundingAccount()?.id }} held by <strong>{{
+          fundingAccount()?.holderName }}</strong>.
+      </p>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label" for="funding-amount-input">Transfer Amount (USD)</label>
+        <input id="funding-amount-input" type="number" class="form-input" placeholder="0.00" [ngModel]="fundingAmount()"
+          (ngModelChange)="fundingAmount.set($event)" step="0.01" min="0.01" required
+          style="width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 8px; padding: 0 0.75rem;" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-neutral" (click)="closeFundingModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitFunding()">
+        {{ fundingAction() === 'add' ? 'Add Funds' : 'Deduct Funds' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- 3. Transaction Details Modal -->
+@if (selectedTransaction()) {
+<div class="modal-overlay animate-fade-in">
+  <div class="modal-card animate-scale-in">
+    <div class="modal-header">
+      <h3 class="modal-title">Transaction Details</h3>
+      <button class="modal-close-btn" (click)="closeTransactionDetails()">&times;</button>
+    </div>
+    <div class="modal-body space-y-3" style="font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.75rem;">
+      <div>
+        <span
+          style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 600; display: block; text-transform: uppercase;">Transaction
+          ID</span>
+        <span style="font-family: monospace; font-size: 0.75rem; font-weight: 700; color: hsl(var(--foreground));">{{
+          selectedTransaction()?.id }}</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <span
+            style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 600; display: block; text-transform: uppercase;">Sender
+            Account</span>
+          <span style="font-weight: 700; color: hsl(var(--foreground));">{{ selectedTransaction()?.fromAccountHolderName
+            }}</span>
+          <small
+            style="color: hsl(var(--muted-foreground)); display: block; font-family: monospace; font-size: 0.625rem;">#{{
+            selectedTransaction()?.fromAccountId }}</small>
+        </div>
+        <div>
+          <span
+            style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 600; display: block; text-transform: uppercase;">Receiver
+            Account</span>
+          <span style="font-weight: 700; color: hsl(var(--foreground));">{{ selectedTransaction()?.toAccountHolderName
+            }}</span>
+          <small
+            style="color: hsl(var(--muted-foreground)); display: block; font-family: monospace; font-size: 0.625rem;">#{{
+            selectedTransaction()?.toAccountId }}</small>
+        </div>
+      </div>
+
+      <div>
+        <span
+          style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 600; display: block; text-transform: uppercase;">Amount
+          Transferred</span>
+        <span style="font-size: 1.125rem; font-weight: 900; color: var(--color-primary);">{{
+          selectedTransaction()?.amount | currency }}</span>
+      </div>
+
+      <div>
+        <span
+          style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 600; display: block; text-transform: uppercase;">Settlement
+          Date</span>
+        <span style="font-weight: 600; color: hsl(var(--muted-foreground));">{{ selectedTransaction()?.createdOn |
+          date:'medium' }}</span>
+      </div>
+
+      <div>
+        <span
+          style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 600; display: block; text-transform: uppercase;">Status</span>
+        <div style="margin-top: 0.25rem;">
+          <span class="badge" [class.badge-success]="selectedTransaction()?.status === 'SUCCESS'"
+            [class.badge-danger]="selectedTransaction()?.status !== 'SUCCESS'">
+            {{ selectedTransaction()?.status }}
+          </span>
+        </div>
+      </div>
+
+      @if (selectedTransaction()?.failureReason) {
+      <div class="auth-error-banner" style="margin-top: 0.5rem; font-size: 0.75rem; padding: 0.5rem 0.75rem;">
+        <strong>Error Details:</strong> {{ selectedTransaction()?.failureReason }}
+      </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-neutral" (click)="closeTransactionDetails()">Dismiss Details</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- 4. Adjust User Rewards Modal -->
+@if (adjustingUserRewards()) {
+<div class="modal-overlay animate-fade-in">
+  <div class="modal-card animate-scale-in">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ adjustRewardsAction() === 'add' ? 'Add Reward Points' : 'Deduct Reward Points' }}</h3>
+      <button class="modal-close-btn" (click)="closeAdjustRewardsModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-description">
+        Perform a reward points adjustment for user <strong>{{ adjustingUserRewards()?.username }}</strong> (Account #{{
+        adjustingUserRewards()?.accountId }}).
+      </p>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label" for="rewards-amount-input">Reward Points</label>
+        <input id="rewards-amount-input" type="number" class="form-input" placeholder="0"
+          [ngModel]="rewardsAdjustmentAmount()" (ngModelChange)="rewardsAdjustmentAmount.set($event)" step="1" min="1"
+          required
+          style="width: 100%; height: 40px; border: 1px solid hsl(var(--border)); border-radius: 8px; padding: 0 0.75rem;" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAdjustRewardsModal()">Cancel</button>
+      <button class="btn" [class.btn-primary]="adjustRewardsAction() === 'add'"
+        [class.btn-danger]="adjustRewardsAction() === 'deduct'" (click)="submitAdjustRewards()">
+        Confirm {{ adjustRewardsAction() === 'add' ? 'Addition' : 'Deduction' }}
+      </button>
+    </div>
+  </div>
+</div>
+}

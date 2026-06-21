@@ -1,0 +1,673 @@
+/* ============================================================
+   DASHBOARD — Dark Mode Theme
+   Scoped to the dashboard component host element
+   ============================================================ */
+
+:host {
+  display: block;
+}
+
+/* Dark wrapper fills the entire page area */
+.dash-wrapper {
+  background: #000000;
+  min-height: calc(100vh - var(--topbar-height, 64px));
+  margin: -1.5rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Welcome Banner */
+.dash-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .dash-banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.dash-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #f1f5f9;
+  letter-spacing: -0.02em;
+}
+
+.dash-subtitle {
+  font-size: 0.875rem;
+  color: #475569;
+  margin-top: 0.25rem;
+}
+
+.dash-account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0.35rem 0.875rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.dash-account-id {
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+/* Skeleton Grid */
+.dash-skeleton-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .dash-skeleton-grid {
+    grid-template-columns: 360px 1fr;
+  }
+}
+
+.dash-skeleton-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.dash-skeleton-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.6s infinite;
+  border-radius: 6px;
+}
+
+.skeleton-line.tall {
+  height: 40px;
+}
+
+.skeleton-line.w-full {
+  width: 100%;
+}
+
+.skeleton-line.w-1-4 {
+  width: 25%;
+}
+
+.skeleton-line.w-1-3 {
+  width: 33%;
+}
+
+.skeleton-line.w-1-2 {
+  width: 50%;
+}
+
+.skeleton-line.w-2-3 {
+  width: 66%;
+}
+
+@keyframes skeletonShimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Reward Star Widget */
+.stat-widget-star {
+  padding: 0.625rem;
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Override text colors for dark bg */
+:host h1,
+:host h2,
+:host h3 {
+  color: #f1f5f9;
+}
+
+:host p,
+:host small {
+  color: #94a3b8;
+}
+
+/* Welcome banner text */
+:host .text-slate-900 {
+  color: #f1f5f9 !important;
+}
+
+:host .text-slate-500 {
+  color: #64748b !important;
+}
+
+:host .text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+/* Account ID chip */
+:host .font-mono.bg-slate-100 {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+}
+
+:host .font-bold.text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+/* ---- Dashboard Grid Layout ---- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 360px 1fr;
+    align-items: start;
+  }
+}
+
+/* Left Column */
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ============================================================
+   3D CREDIT CARD
+   ============================================================ */
+.perspective-container {
+  perspective: 1000px;
+}
+
+.debit-card-3d {
+  width: 100%;
+  aspect-ratio: 1.586 / 1;
+  background: linear-gradient(135deg, #0a1f0a 0%, #1a5e19 45%, #25862e 80%, #1b5c14 100%);
+  border-radius: 22px;
+  position: relative;
+  padding: 1.5rem;
+  color: #fff;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s;
+  cursor: pointer;
+}
+
+.debit-card-3d:hover {
+  transform: rotateY(12deg) rotateX(5deg) translateY(-6px);
+  box-shadow:
+    0 32px 70px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Shimmer overlay */
+.debit-card-3d::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.04) 40%,
+      rgba(255, 255, 255, 0) 60%);
+  pointer-events: none;
+}
+
+/* Decorative circle */
+.debit-card-3d::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.card-brand {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.875rem;
+}
+
+.card-logo {
+  font-size: 1.125rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+.card-chip {
+  width: 42px;
+  height: 32px;
+  background: linear-gradient(145deg, #d4af37 0%, #f9d976 50%, #c8a12b 100%);
+  border-radius: 6px;
+  position: relative;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.card-chip::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 3px;
+}
+
+.card-balance-section {
+  margin-bottom: 1.5rem;
+}
+
+.card-balance-label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-balance-value {
+  font-size: 2.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 0.25rem;
+  color: #fff;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-holder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.card-holder-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.card-holder-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.card-number {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875rem;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ============================================================
+   QUICK ACTION BUBBLES
+   ============================================================ */
+.quick-action-bubbles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.action-bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.action-bubble:hover {
+  background: rgba(54, 135, 39, 0.18);
+  border-color: rgba(54, 135, 39, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.action-bubble-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(54, 135, 39, 0.12);
+  color: #8AD97C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.action-bubble:hover .action-bubble-icon {
+  background: var(--color-primary, #368727);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(54, 135, 39, 0.45);
+}
+
+.action-bubble span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+/* ============================================================
+   STAT WIDGET (Reward Points)
+   ============================================================ */
+.stat-widget {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 1.125rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s;
+}
+
+.stat-widget:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.stat-widget-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-widget-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stat-widget-value {
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-top: 0.2rem;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   RIGHT COLUMN — Activity Timeline
+   ============================================================ */
+.dashboard-right {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(12px);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-header h2 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.section-header a {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #8AD97C;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.section-header a:hover {
+  color: #BBEBB2;
+}
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+.timeline-stream {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.timeline-stream::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(138, 217, 124, 0.4), rgba(138, 217, 124, 0.05));
+  border-radius: 2px;
+}
+
+.timeline-group {
+  margin-bottom: 1.5rem;
+}
+
+.timeline-group:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-header {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.timeline-header::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8AD97C;
+  border: 2px solid #0f1117;
+  box-shadow: 0 0 8px rgba(138, 217, 124, 0.5);
+}
+
+.timeline-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s;
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.timeline-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.timeline-icon-badge.sent {
+  background: rgba(255, 104, 104, 0.12);
+  color: #FF6868;
+}
+
+.timeline-icon-badge.received {
+  background: rgba(138, 217, 124, 0.12);
+  color: #8AD97C;
+}
+
+.timeline-item-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.timeline-item-time {
+  font-size: 0.75rem;
+  color: #475569;
+  margin-top: 0.15rem;
+}
+
+.timeline-item-right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.timeline-amount {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.timeline-amount.sent {
+  color: #94a3b8;
+}
+
+.timeline-amount.received {
+  color: #8AD97C;
+}
+
+.timeline-badge {
+  font-size: 0.6875rem;
+  padding: 0.2em 0.6em;
+  border-radius: 5px;
+  font-weight: 700;
+}
+
+.timeline-badge.success {
+  background: rgba(138, 217, 124, 0.12);
+  color: #8AD97C;
+}
+
+.timeline-badge.failed {
+  background: rgba(255, 104, 104, 0.12);
+  color: #FF6868;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.timeline-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+}
+
+.timeline-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timeline-empty h3 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 0.375rem;
+}
+
+.timeline-empty p {
+  font-size: 0.8125rem;
+  color: #475569;
+}
+
+/* ============================================================
+   AMBER REWARDS WIDGET (bg-amber-50 override)
+   ============================================================ */
+:host .p-2\.5.bg-amber-50 {
+  background: rgba(251, 191, 36, 0.12) !important;
+}

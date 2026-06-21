@@ -1,0 +1,166 @@
+<!-- Rewards Page — Dark Mode Premium Redesign -->
+<div class="rewards-wrapper">
+
+  <!-- Page Header -->
+  <div class="rewards-header">
+    <h1 class="rewards-title">Rewards Program</h1>
+    <p class="rewards-subtitle">Earn cashback loyalty points for every successful transfer you make.</p>
+  </div>
+
+  @if (isLoading()) {
+    <!-- Loading Skeleton -->
+    <div class="rewards-skeleton-grid">
+      <div class="rewards-skeleton-card">
+        <div class="sk-line h-tall w-full"></div>
+        <div class="sk-line w-2-3"></div>
+        <div class="sk-line w-1-3"></div>
+      </div>
+      <div class="rewards-skeleton-card">
+        <div class="sk-line w-1-3"></div>
+        <div class="sk-line h-full w-full"></div>
+        <div class="sk-line h-full w-full"></div>
+        <div class="sk-line h-full w-full"></div>
+      </div>
+    </div>
+  } @else {
+
+    <div class="rewards-grid">
+
+      <!-- ===== LEFT COLUMN ===== -->
+      <div class="rewards-left">
+
+        <!-- Gold Status Card -->
+        <div class="rewards-status-card">
+          <div class="status-card-top">
+            <span class="status-label">Loyalty Status</span>
+            <div class="status-icon">
+              <svg lucideTrophy [size]="20"></svg>
+            </div>
+          </div>
+
+          <div class="status-card-body">
+            <span class="status-points-label">Total Balance</span>
+            <div class="status-points-value">
+              <span class="status-points-number">{{ totalPoints() }}</span>
+              <span class="status-points-unit">points</span>
+            </div>
+          </div>
+
+          <div class="status-card-footer">
+            <div class="status-tier-badge">
+              <div class="tier-dot"></div>
+              @if (totalPoints() >= 100) {
+                Gold Member
+              } @else if (totalPoints() >= 50) {
+                Silver Member
+              } @else {
+                Bronze Member
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- How Rewards Work -->
+        <div class="rewards-rules-card">
+          <h3 class="rules-card-title">
+            <svg lucideStar [size]="16" fill="currentColor"></svg>
+            How Rewards Work
+          </h3>
+          <ul class="rules-list">
+            <li>
+              <div class="rule-icon">
+                <svg lucideDollarSign [size]="14"></svg>
+              </div>
+              <span>Earn <strong>1 point for every $100</strong> transferred.</span>
+            </li>
+            <li>
+              <div class="rule-icon">
+                <svg lucideCheckCircle [size]="14"></svg>
+              </div>
+              <span>Transfers must be <strong>successful</strong> and at least <strong>$100</strong>.</span>
+            </li>
+            <li>
+              <div class="rule-icon">
+                <svg lucideCalculator [size]="14"></svg>
+              </div>
+              <span>Points are <strong>rounded down</strong> (e.g. $250 transfer = 2 pts).</span>
+            </li>
+            <li>
+              <div class="rule-icon">
+                <svg lucideZap [size]="14"></svg>
+              </div>
+              <span>Points are <strong>issued instantly</strong> upon successful confirmation.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- ===== RIGHT COLUMN ===== -->
+      <div class="rewards-right">
+
+        <div class="history-header">
+          <div>
+            <h2 class="history-title">Rewards History</h2>
+            <p class="history-subtitle">Points earned per successful transaction</p>
+          </div>
+          @if (rewardHistory().length > 0) {
+            <div class="history-total-badge">
+              <svg lucideStar [size]="12" fill="currentColor"></svg>
+              {{ totalPoints() }} pts total
+            </div>
+          }
+        </div>
+
+        @if (rewardHistory().length === 0) {
+          <!-- Empty State -->
+          <div class="rewards-empty">
+            <div class="rewards-empty-icon">
+              <svg lucideTrophy [size]="32"></svg>
+            </div>
+            <h3>No rewards earned yet</h3>
+            <p>Start transferring funds (minimum $100) to earn loyalty points that build up over time!</p>
+            <a routerLink="/transfer" class="rewards-cta-btn">
+              <svg lucideSend [size]="15"></svg>
+              Send Money Now
+            </a>
+          </div>
+        } @else {
+          <!-- History Table -->
+          <div class="history-table-wrapper">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Transaction ID</th>
+                  <th class="text-right">Amount</th>
+                  <th class="text-right">Points Earned</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let reward of rewardHistory()">
+                  <td>
+                    <span class="td-date-text">{{ reward.createdOn | date:'dd MMM yyyy, hh:mm a' }}</span>
+                  </td>
+                  <td>
+                    <span class="tx-id-badge">{{ getShortTransactionId(reward.transactionId) }}</span>
+                  </td>
+                  <td class="td-amount">{{ reward.amount | currency:'USD' }}</td>
+                  <td class="td-points">
+                    <span class="points-earned-badge">
+                      <svg lucideStar [size]="11" fill="currentColor"></svg>
+                      +{{ reward.pointsEarned }} pts
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        }
+
+      </div>
+
+    </div>
+  }
+
+</div>

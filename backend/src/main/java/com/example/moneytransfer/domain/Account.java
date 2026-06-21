@@ -1,189 +1,74 @@
 package com.example.moneytransfer.domain;
 
-import com.example.moneytransfer.enums.AccountStatus;
+import com.example.moneytransfer.domain.enums.AccountStatus;
 import com.example.moneytransfer.exception.AccountNotActiveException;
 import com.example.moneytransfer.exception.InsufficientBalanceException;
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Objects;
+import java.sql.Timestamp;
 
 @Entity
-@Table(name = "ACCOUNTS")
+@Table(name = "accounts")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "holder_name", nullable = false, length = 255)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
+    private User user;
+
+    @Column(name = "holder_name", nullable = false)
     private String holderName;
 
-    @Column(name = "balance", nullable = false, precision = 19, scale = 2)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
 
-    @Column(name = "password", nullable = false, length = 255)
-    private String password;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(nullable = false)
     private AccountStatus status;
 
     @Version
-    @Column(name = "version", nullable = false)
     private Integer version;
 
     @Column(name = "last_updated")
-    private Instant lastUpdated;
-
-    public Account() {
-        this.balance = BigDecimal.ZERO;
-        this.status = AccountStatus.ACTIVE;
-        this.version = 0;
-        this.lastUpdated = Instant.now();
-    }
-
-    public Account(Long id, String holderName, BigDecimal balance, String password, AccountStatus status) {
-        this.id = id;
-        this.holderName = holderName;
-        this.balance = balance != null ? balance : BigDecimal.ZERO;
-        this.password = password;
-        this.status = status != null ? status : AccountStatus.ACTIVE;
-        this.version = 0;
-        this.lastUpdated = Instant.now();
-    }
-
-    @PreUpdate
-    public void setLastUpdatedOnSave() {
-        this.lastUpdated = Instant.now();
-    }
-
-    public void debit(BigDecimal amount) {
-        validateAmount(amount);
-        validateAccountIsActive();
-        validateSufficientBalance(amount);
-
-        this.balance = this.balance.subtract(amount);
-        this.lastUpdated = Instant.now();
-    }
-
-    public void credit(BigDecimal amount) {
-        validateAmount(amount);
-        validateAccountIsActive();
-
-        this.balance = this.balance.add(amount);
-        this.lastUpdated = Instant.now();
-    }
+    private Timestamp lastUpdated;
 
     public boolean isActive() {
         return this.status == AccountStatus.ACTIVE;
     }
 
-    private void validateAccountIsActive() {
+    public void debit(BigDecimal amount) {
         if (!isActive()) {
-            throw new AccountNotActiveException(this.id, this.status);
+            throw new AccountNotActiveException("Account is " + this.status);
         }
-    }
-
-    private void validateSufficientBalance(BigDecimal amount) {
-        if (this.balance.compareTo(amount) < 0) {
-            throw new InsufficientBalanceException(this.id, this.balance, amount);
+        if (amount == null || amount.signum() <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
         }
-    }
-
-    private void validateAmount(BigDecimal amount) {
-        if (amount == null) {
-            throw new IllegalArgumentException("Amount cannot be null");
+        if (this.balance == null || this.balance.compareTo(amount) < 0) {
+            throw new InsufficientBalanceException("Insufficient funds for transfer");
         }
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero");
+        this.balance = this.balance.subtract(amount);
+    }
+
+    public void credit(BigDecimal amount) {
+        if (!isActive()) {
+            throw new AccountNotActiveException("Account is " + this.status);
         }
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getHolderName() {
-        return holderName;
-    }
-
-    public void setHolderName(String holderName) {
-        this.holderName = holderName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    public AccountStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(AccountStatus status) {
-        this.status = status;
-    }
-
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-
-    public Instant getLastUpdated() {
-        return lastUpdated;
-    }
-
-    public void setLastUpdated(Instant lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
-
-    public void incrementVersion() {
-        this.version = (this.version == null ? 0 : this.version) + 1;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        Account account = (Account) o;
-        return Objects.equals(id, account.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Account{" +
-                "id=" + id +
-                ", holderName='" + holderName + '\'' +
-                ", balance=" + balance +
-                ", status=" + status +
-                ", version=" + version +
-                ", lastUpdated=" + lastUpdated +
-                '}';
+        if (amount == null || amount.signum() <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (this.balance == null) {
+            this.balance = BigDecimal.ZERO;
+        }
+        this.balance = this.balance.add(amount);
     }
 }

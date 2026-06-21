@@ -2,52 +2,15 @@ package com.example.moneytransfer.exception;
 
 import java.math.BigDecimal;
 
-public class InsufficientBalanceException extends RuntimeException {
+public class InsufficientBalanceException extends DomainException {
 
-    private final Long accountId;
-    private final BigDecimal currentBalance;
-    private final BigDecimal requestedAmount;
+    private static final String ERROR_CODE = "TRX-400";
 
-    public InsufficientBalanceException(Long accountId, BigDecimal currentBalance,
-            BigDecimal requestedAmount) {
-        super(String.format(
-                "Insufficient balance in account %d. Current balance: %s, Requested amount: %s",
-                accountId, currentBalance, requestedAmount));
-        this.accountId = accountId;
-        this.currentBalance = currentBalance;
-        this.requestedAmount = requestedAmount;
+    public InsufficientBalanceException(Long id, BigDecimal amount) {
+        super(ERROR_CODE, "Insufficient funds on account " + id + " for amount " + amount);
     }
 
     public InsufficientBalanceException(String message) {
-        super(message);
-        this.accountId = null;
-        this.currentBalance = null;
-        this.requestedAmount = null;
-    }
-
-    public InsufficientBalanceException(String message, Throwable cause) {
-        super(message, cause);
-        this.accountId = null;
-        this.currentBalance = null;
-        this.requestedAmount = null;
-    }
-
-    public Long getAccountId() {
-        return accountId;
-    }
-
-    public BigDecimal getCurrentBalance() {
-        return currentBalance;
-    }
-
-    public BigDecimal getRequestedAmount() {
-        return requestedAmount;
-    }
-
-    public BigDecimal getShortfall() {
-        if (currentBalance != null && requestedAmount != null) {
-            return requestedAmount.subtract(currentBalance);
-        }
-        return null;
+        super(ERROR_CODE, message);
     }
 }

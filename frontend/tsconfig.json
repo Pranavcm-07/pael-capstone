@@ -1,0 +1,81 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "paths": {
+      "@spartan/ui/button": [
+        "./src/lib/ui/button/src/index.ts"
+      ],
+      "@spartan/ui/utils": [
+        "./src/lib/ui/utils/src/index.ts"
+      ],
+      "@spartan/ui/input": [
+        "./src/lib/ui/input/src/index.ts"
+      ],
+      "@spartan/ui/badge": [
+        "./src/lib/ui/badge/src/index.ts"
+      ],
+      "@spartan/ui/separator": [
+        "./src/lib/ui/separator/src/index.ts"
+      ],
+      "@spartan/ui/label": [
+        "./src/lib/ui/label/src/index.ts"
+      ],
+      "@spartan/ui/card": [
+        "./src/lib/ui/card/src/index.ts"
+      ],
+      "@spartan/ui/dialog": [
+        "./src/lib/ui/dialog/src/index.ts"
+      ],
+      "@spartan/ui/icon": [
+        "./src/lib/ui/icon/src/index.ts"
+      ],
+      "@spartan/ui/alert-dialog": [
+        "./src/lib/ui/alert-dialog/src/index.ts"
+      ],
+      "@spartan/ui/sheet": [
+        "./src/lib/ui/sheet/src/index.ts"
+      ],
+      "@spartan/ui/avatar": [
+        "./src/lib/ui/avatar/src/index.ts"
+      ],
+      "@spartan/ui/skeleton": [
+        "./src/lib/ui/skeleton/src/index.ts"
+      ],
+      "@spartan/ui/table": [
+        "./src/lib/ui/table/src/index.ts"
+      ],
+      "@spartan/ui/select": [
+        "./src/lib/ui/select/src/index.ts"
+      ],
+      "@spartan/ui/tabs": [
+        "./src/lib/ui/tabs/src/index.ts"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
+}

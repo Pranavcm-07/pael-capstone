@@ -1,111 +1,151 @@
 package com.example.moneytransfer.service;
 
 import com.example.moneytransfer.domain.Account;
-import com.example.moneytransfer.domain.TransactionLog;
+import com.example.moneytransfer.domain.entity.TransactionLog;
+import com.example.moneytransfer.domain.enums.TransactionStatus;
 import com.example.moneytransfer.dto.TransferRequest;
 import com.example.moneytransfer.dto.TransferResponse;
-import com.example.moneytransfer.enums.TransactionStatus;
-import com.example.moneytransfer.exception.AccountNotActiveException;
 import com.example.moneytransfer.exception.AccountNotFoundException;
-import com.example.moneytransfer.exception.DuplicateTransferException;
-import com.example.moneytransfer.exception.InsufficientBalanceException;
 import com.example.moneytransfer.repository.AccountRepository;
 import com.example.moneytransfer.repository.TransactionLogRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TransferService {
 
     private final AccountRepository accountRepository;
     private final TransactionLogRepository transactionLogRepository;
+    private final TransactionLogService transactionLogService;
+    private final RewardService rewardService;
+    private final SystemSettingService systemSettingService;
 
     public TransferService(AccountRepository accountRepository,
-            TransactionLogRepository transactionLogRepository) {
+                           TransactionLogRepository transactionLogRepository,
+                           TransactionLogService transactionLogService,
+                           RewardService rewardService,
+                           SystemSettingService systemSettingService) {
         this.accountRepository = accountRepository;
         this.transactionLogRepository = transactionLogRepository;
-    }
-
-    public TransferResponse transfer(TransferRequest request) {
-        checkOwnership(request.fromAccountId());
-
-        Optional<TransactionLog> existing = transactionLogRepository.findByIdempotencyKey(request.idempotencyKey());
-        if (existing.isPresent()) {
-            throw new DuplicateTransferException(request.idempotencyKey());
-        }
-
-        try {
-            validateTransfer(request);
-            return executeTransfer(request);
-        } catch (AccountNotActiveException | InsufficientBalanceException | AccountNotFoundException
-                | IllegalArgumentException e) {
-            TransactionLog failedLog = TransactionLog.failed(
-                    request.fromAccountId(),
-                    request.toAccountId(),
-                    request.amount(),
-                    request.idempotencyKey(),
-                    e.getMessage());
-            transactionLogRepository.save(failedLog);
-            throw e;
-        }
-    }
-
-    private void checkOwnership(Long accountId) {
-        String authenticatedId = org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        // Skip check for "admin" or similar roles if needed, or if security context is
-        // not fully set up in dev
-        if (!authenticatedId.equals("anonymousUser") && !authenticatedId.equals(String.valueOf(accountId))) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "You are not authorized to transfer from this account.");
-        }
-    }
-
-    public void validateTransfer(TransferRequest request) {
-        if (request.fromAccountId().equals(request.toAccountId())) {
-            throw new IllegalArgumentException("Cannot transfer money to the same account.");
-        }
-        Account from = accountRepository.findById(request.fromAccountId())
-                .orElseThrow(() -> new AccountNotFoundException(request.fromAccountId()));
-        Account to = accountRepository.findById(request.toAccountId())
-                .orElseThrow(() -> new AccountNotFoundException(request.toAccountId()));
-
-        if (!from.isActive()) {
-            throw new AccountNotActiveException(from.getId(), from.getStatus());
-        }
-        if (!to.isActive()) {
-            throw new AccountNotActiveException(to.getId(), to.getStatus());
-        }
-        if (from.getBalance().compareTo(request.amount()) < 0) {
-            throw new InsufficientBalanceException(from.getId(), from.getBalance(), request.amount());
-        }
+        this.transactionLogService = transactionLogService;
+        this.rewardService = rewardService;
+        this.systemSettingService = systemSettingService;
     }
 
     @Transactional
-    public TransferResponse executeTransfer(TransferRequest request) {
-        Account from = accountRepository.findById(request.fromAccountId())
-                .orElseThrow(() -> new AccountNotFoundException(request.fromAccountId()));
-        Account to = accountRepository.findById(request.toAccountId())
-                .orElseThrow(() -> new AccountNotFoundException(request.toAccountId()));
+    public TransferResponse transfer(TransferRequest request, String username) {
 
-        from.debit(request.amount());
-        to.credit(request.amount());
-        accountRepository.save(from);
-        accountRepository.save(to);
+        // 1) Idempotency check (if key exists, return prior result)
+        Optional<TransactionLog> existing =
+                transactionLogRepository.findByIdempotencyKey(request.getIdempotencyKey());
 
-        TransactionLog log = TransactionLog.success(
-                request.fromAccountId(),
-                request.toAccountId(),
-                request.amount(),
-                request.idempotencyKey());
-        log = transactionLogRepository.save(log);
+        if (existing.isPresent()) {
+            TransactionLog log = existing.get();
 
-        return TransferResponse.success(
-                log.getId(),
-                request.fromAccountId(),
-                request.toAccountId(),
-                request.amount());
+            TransferResponse response = new TransferResponse();
+            response.setTransactionId(log.getId().toString());
+            response.setStatus(log.getStatus().name());
+            response.setMessage(log.getStatus() == TransactionStatus.SUCCESS
+                    ? "Transfer already completed (idempotent replay)"
+                    : "Transfer already failed (idempotent replay)");
+            response.setDebitedFrom(log.getFromAccountId());
+            response.setCreditedTo(log.getToAccountId());
+            response.setAmount(log.getAmount());
+            response.setRewardPointsEarned(rewardService.getPointsForTransaction(log.getId()));
+            return response;
+        }
+
+        UUID txId = UUID.randomUUID();
+
+        try {
+            // 2) Load accounts
+            Account source = accountRepository.findById(request.getFromAccountId())
+                    .orElseThrow(() -> new AccountNotFoundException(request.getFromAccountId()));
+
+            // Verify ownership
+            if (!source.getUser().getUsername().equals(username)) {
+                throw new com.example.moneytransfer.exception.UnauthorizedAccessException("Unauthorized: Source account does not belong to user");
+            }
+
+            Account destination = accountRepository.findById(request.getToAccountId())
+                    .orElseThrow(() -> new AccountNotFoundException(request.getToAccountId()));
+
+            // 3) Validate
+            if (!systemSettingService.isTransfersEnabled()) {
+                throw new IllegalArgumentException("VAL-422:Transfers are currently disabled by the administrator");
+            }
+
+            java.math.BigDecimal amount = request.getAmount();
+            java.math.BigDecimal minAmount = systemSettingService.getMinTransferAmount();
+            java.math.BigDecimal maxAmount = systemSettingService.getMaxTransferAmount();
+
+            if (amount.compareTo(minAmount) < 0) {
+                throw new IllegalArgumentException("VAL-422:Transfer amount is below the minimum allowed limit of $" + minAmount);
+            }
+            if (amount.compareTo(maxAmount) > 0) {
+                throw new IllegalArgumentException("VAL-422:Transfer amount exceeds the maximum allowed limit of $" + maxAmount);
+            }
+
+            if (source.getId().equals(destination.getId())) {
+                throw new com.example.moneytransfer.exception.SelfTransferException("Source and destination accounts must be different");
+            }
+
+            if (isAdminAccount(destination)) {
+                throw new IllegalArgumentException("VAL-422:Cannot transfer money to an administrator account");
+            }
+
+            // 4) Execute transfer
+            source.debit(request.getAmount());
+            destination.credit(request.getAmount());
+
+            // 5) Persist balances
+            accountRepository.save(source);
+            accountRepository.save(destination);
+
+            // 6) Save SUCCESS log
+            TransactionLog successLog = new TransactionLog();
+            successLog.setId(txId);
+            successLog.setFromAccountId(source.getId());
+            successLog.setToAccountId(destination.getId());
+            successLog.setAmount(request.getAmount());
+            successLog.setStatus(TransactionStatus.SUCCESS);
+            successLog.setFailureReason(null);
+            successLog.setIdempotencyKey(request.getIdempotencyKey());
+            successLog.setCreatedOn(Timestamp.from(Instant.now()));
+
+            transactionLogRepository.save(successLog);
+
+            // 6b) Evaluate and grant reward points to the sender, if eligible
+            int points = rewardService.evaluateAndGrant(successLog, source, destination);
+
+            // 7) Build response
+            TransferResponse response = new TransferResponse();
+            response.setTransactionId(txId.toString());
+            response.setStatus("SUCCESS");
+            response.setMessage("Transfer completed");
+            response.setDebitedFrom(source.getId());
+            response.setCreditedTo(destination.getId());
+            response.setAmount(request.getAmount());
+            response.setRewardPointsEarned(points);
+            return response;
+
+        } catch (RuntimeException ex) {
+            // 8) Save FAILED log in a separate transaction (so it persists even on rollback)
+            transactionLogService.saveFailed(txId, request, ex.getMessage());
+            throw ex;
+        }
+    }
+
+    private boolean isAdminAccount(Account account) {
+        if (account.getUser() == null || account.getUser().getRole() == null) {
+            return false;
+        }
+        return "ROLE_ADMIN".equalsIgnoreCase(account.getUser().getRole().trim());
     }
 }
+

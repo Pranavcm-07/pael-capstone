@@ -1,7 +1,7 @@
 package com.example.moneytransfer.controller;
 
 import com.example.moneytransfer.dto.AccountResponse;
-import com.example.moneytransfer.dto.TransactionResponse;
+import com.example.moneytransfer.dto.TransactionLogResponse;
 import com.example.moneytransfer.service.AccountService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,22 +22,29 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<AccountResponse>> getMyAccounts(java.security.Principal principal) {
+        return ResponseEntity.ok(accountService.getAccountsByUser(principal.getName()));
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<AccountResponse> getAccount(@PathVariable Long id) {
-        return ResponseEntity.ok(AccountResponse.fromAccount(accountService.getAccount(id)));
+    public ResponseEntity<AccountResponse> getAccount(@PathVariable Long id, java.security.Principal principal) {
+        return ResponseEntity.ok(accountService.getAccount(id, principal.getName()));
+    }
+
+    @GetMapping("/{id}/lookup")
+    public ResponseEntity<AccountResponse> lookupAccount(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.lookupAccount(id));
     }
 
     @GetMapping("/{id}/balance")
-    public ResponseEntity<BigDecimal> getBalance(@PathVariable Long id) {
-        BigDecimal balance = accountService.getBalance(id);
-        return ResponseEntity.ok(balance);
+    public ResponseEntity<BigDecimal> getBalance(@PathVariable Long id, java.security.Principal principal) {
+        return ResponseEntity.ok(accountService.getBalance(id, principal.getName()));
     }
 
     @GetMapping("/{id}/transactions")
-    public ResponseEntity<List<TransactionResponse>> getTransactions(@PathVariable Long id) {
-        List<TransactionResponse> transactions = accountService.getTransactions(id).stream()
-                .map(TransactionResponse::fromTransactionLog)
-                .toList();
-        return ResponseEntity.ok(transactions);
+    public ResponseEntity<List<TransactionLogResponse>> getTransactions(@PathVariable Long id, java.security.Principal principal) {
+        return ResponseEntity.ok(accountService.getTransactions(id, principal.getName()));
     }
 }
+

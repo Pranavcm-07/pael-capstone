@@ -1,56 +1,170 @@
-# Money Transfer System 💸
+# Money Transfer System
 
-A simple and secure web application to transfer money between bank accounts. This project was built to demonstrate a full-stack microservice architecture.
+A full-stack money transfer application implementing a digital **Money Transfer System** with Spring Boot backend and Angular frontend.
 
-## 🚀 Features
+## Modules
 
-- **User Authentication**: Secure login system.
-- **Money Transfer**: Send money instantly to other accounts.
-- **Transaction History**: View a complete log of all sent and received money.
-- **Smart Validations**: Prevents errors like insufficient funds or transferring to the same account.
-- **Real-time Feedback**: Instant success or error messages.
+- GIT: Repository structure and branching strategy
+- Advanced Java: Domain models, DTOs, exceptions, and unit tests
+- Spring Boot: REST APIs, services, security, database access, and AOP logging
+- Angular: Single Page Application frontend
+- Snowflake: Analytics data warehouse and queries
 
-## 🛠️ Tech Stack
+## Project Structure
 
-- **Backend**: Java 17, Spring Boot, Spring Data JPA
-- **Frontend**: Angular 17, TypeScript, CSS
-- **Database**: MySQL
-- **Build Tools**: Maven (Backend), Angular CLI (Frontend)
+```text
+money-transfer-system/
+  backend/        # Spring Boot application (Java 17)
+  frontend/       # Angular SPA
+  database/       # MySQL DDL and seed data
+  snowflake/      # Snowflake DDL and analytics queries
+  docs/           # Additional documentation
+```
 
-## 🏃‍♂️ How to Run
+## Prerequisites
 
-### 1. Database Setup
-Ensure MySQL is running and creates a database named `money_transfer_db`. The app will automatically create tables and seed demo data.
+Ensure you have the following installed:
 
-### 2. Start the Backend
-Navigate to the `backend` folder and run:
-`mvn spring-boot:run`
+- **Java 17** or higher
+- **Maven 3.8+**
+- **MySQL 9.7 LTS** (or MySQL 8.x)
+- **Node.js LTS** (v22.14.0+)
+- **Angular CLI** (v21.2.15+)
 
-The server will start on `http://localhost:8080`.
+Verify installations:
 
-### 3. Start the Frontend
-Navigate to the `frontend/money-transfer-app` folder and run:
-`ng serve -o`
+```bash
+java --version
+mvn -v
+mysql --version
+node -v
+ng version
+```
 
-The application will open at `http://localhost:4200`.
+## Database Setup
 
-## 🧪 Demo Credentials
+### 1. Create Database
 
-Use these accounts to test the application:
+```bash
+mysql -u root -p -e "CREATE DATABASE money_transfer;"
+```
 
-| User | Username | Password | Account ID |
-|------|----------|----------|------------|
-| **Pranav** | `Pranav` | `pranav123` | `1` |
-| **Pranesh** | `Pranesh` | `pranesh123` | `2` |
+### 2. Import Schema and Seed Data
 
-Try logging in as **Pranav** and transferring money to **Pranesh** (Account ID `2`)!
+```bash
+mysql -u root -p money_transfer < database/schema.sql
+mysql -u root -p money_transfer < database/seed-data.sql
+```
 
-## 📝 API Endpoints
+### 3. Update Backend Configuration
 
-- `POST /api/auth/login` - User login
-- `POST /api/v1/transfers` - Initiate a transfer
-- `GET /api/v1/accounts/{id}/balance` - Check balance
+Update `backend/src/main/resources/application.yml` with your MySQL root password:
+
+```yaml
+spring:
+  datasource:
+    password: YOUR_MYSQL_ROOT_PASSWORD
+```
+
+**Test Users (password: `password`):**
+
+- alice - $10,000 balance
+- bob - $5,000 balance
+- charlie - $2,500 balance
+
+## Running the Application
+
+### Start Backend Server
+
+Open a Command Prompt and run:
+
+```bash
+cd C:\Capstone\money-transfer-system\backend
+"C:\Program Files\maven\apache-maven-3.9.16\bin\mvn" spring-boot:run
+```
+
+Backend will start on **http://localhost:8080**
+
+### Start Frontend Server
+
+Open a new Command Prompt and run:
+
+```bash
+cd C:\Capstone\money-transfer-system\frontend
+ng serve
+```
+
+Frontend will start on **http://localhost:4200**
+
+## Accessing the Application
+
+1. Open your browser and go to **http://localhost:4200**
+2. Login with test credentials (e.g., username: `alice`, password: `password`)
+3. You can now:
+   - View account balance
+   - View transaction history
+   - Transfer money to other accounts
+   - View analytics dashboard
+
+## API Endpoints
+
+All endpoints require JWT authentication.
+
+- `POST /api/v1/auth/register` - Register new user
+- `POST /api/v1/auth/login` - Login user
+- `POST /api/v1/transfers` - Create money transfer
+- `GET /api/v1/accounts/{id}` - Get account details
+- `GET /api/v1/accounts/{id}/balance` - Get account balance
 - `GET /api/v1/accounts/{id}/transactions` - Get transaction history
 
----
-*Created for Capstone Project Presentation*
+## Troubleshooting
+
+### Backend won't start - "Access denied for user 'root'"
+
+- Check your MySQL password in `application.yml`
+- Verify MySQL is running with the correct credentials
+
+### Frontend won't start - "ng: not recognized"
+
+- Reinstall Angular CLI: `npm install -g @angular/cli`
+
+### Can't connect to database
+
+- Ensure MySQL service is running
+- Verify database exists: `mysql -u root -p money_transfer -e "SHOW TABLES;"`
+
+### Port already in use
+
+- Backend (8080): Change `server.port` in `application.yml`
+- Frontend (4200): Run `ng serve --port 4300`
+
+## Technology Stack
+
+- **Backend**: Spring Boot 3.3.0, Spring Data JPA, MySQL Connector
+- **Frontend**: Angular 21.1.3, TypeScript, Bootstrap
+- **Database**: MySQL 9.7 LTS
+- **Build**: Maven, npm
+- **Authentication**: JWT
+
+## Development
+
+### Build Backend
+
+```bash
+cd backend
+mvn clean package
+```
+
+### Build Frontend
+
+```bash
+cd frontend
+npm run build
+```
+
+## Notes
+
+- Both backend and frontend servers must be running simultaneously
+- Frontend communicates with backend via REST API on port 8080
+- Authentication is handled via JWT tokens
+- All transactions are logged in the database

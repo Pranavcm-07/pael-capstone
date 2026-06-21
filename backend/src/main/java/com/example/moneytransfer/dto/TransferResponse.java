@@ -1,21 +1,72 @@
 package com.example.moneytransfer.dto;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
-public record TransferResponse(UUID transactionId, String status, String message, Long debitedFrom, Long creditedTo,
-        BigDecimal amount) {
-    public static TransferResponse success(UUID transactionId, Long debitedFrom, Long creditedTo, BigDecimal amount) {
-        return new TransferResponse(transactionId, "SUCCESS", "Transfer completed successfully", debitedFrom,
-                creditedTo, amount);
+public class TransferResponse {
+
+    private String transactionId;
+    private String status;
+    private String message;
+    private long debitedFrom;
+    private long creditedTo;
+    private BigDecimal amount;
+
+    public String getTransactionId() {
+        return transactionId;
     }
 
-    public static TransferResponse failed(UUID transactionId, String message, Long debitedFrom, Long creditedTo,
-            BigDecimal amount) {
-        return new TransferResponse(transactionId, "FAILED", message, debitedFrom, creditedTo, amount);
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
-    public boolean isSuccessful() {
-        return "SUCCESS".equals(status);
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Long getDebitedFrom() {
+        return debitedFrom;
+    }
+
+    public void setDebitedFrom(Long debitedFrom) {
+        this.debitedFrom = debitedFrom;
+    }
+
+    public Long getCreditedTo() {
+        return creditedTo;
+    }
+
+    public void setCreditedTo(Long creditedTo) {
+        this.creditedTo = creditedTo;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    private Integer rewardPointsEarned;
+
+    public Integer getRewardPointsEarned() {
+        return rewardPointsEarned;
+    }
+
+    public void setRewardPointsEarned(Integer rewardPointsEarned) {
+        this.rewardPointsEarned = rewardPointsEarned;
     }
 }
+
