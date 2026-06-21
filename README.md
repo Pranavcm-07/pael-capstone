@@ -2,13 +2,17 @@
 
 A full-stack money transfer application implementing a digital **Money Transfer System** with Spring Boot backend and Angular frontend.
 
-## Modules
+## Modules & Features
 
-- GIT: Repository structure and branching strategy
-- Advanced Java: Domain models, DTOs, exceptions, and unit tests
-- Spring Boot: REST APIs, services, security, database access, and AOP logging
-- Angular: Single Page Application frontend
-- Snowflake: Analytics data warehouse and queries
+- **Premium UI**: Dark mode enabled by default, glassmorphism design, and modern Angular components.
+- **Admin Dashboard**: Specialized admin panel to view all transactions, adjust reward points, run queries, and manage user roles.
+- **Rewards System**: Users earn reward points for successful transactions.
+- **Secure Transfers**: Secure internal transfers using random 8-digit account numbers to prevent enumeration.
+- **GIT**: Repository structure and branching strategy
+- **Advanced Java**: Domain models, DTOs, exceptions, and unit tests
+- **Spring Boot**: REST APIs, services, security (JWT), database access, and AOP logging
+- **Angular**: Single Page Application frontend
+- **Snowflake**: Analytics data warehouse and queries
 
 ## Project Structure
 
@@ -46,14 +50,14 @@ ng version
 ### 1. Create Database
 
 ```bash
-mysql -u root -p -e "CREATE DATABASE money_transfer;"
+mysql -u root -p -e "CREATE DATABASE money_transfer_db;"
 ```
 
 ### 2. Import Schema and Seed Data
 
 ```bash
-mysql -u root -p money_transfer < database/schema.sql
-mysql -u root -p money_transfer < database/seed-data.sql
+mysql -u root -p money_transfer_db < database/schema.sql
+mysql -u root -p money_transfer_db < database/seed-data.sql
 ```
 
 ### 3. Update Backend Configuration
@@ -114,8 +118,10 @@ All endpoints require JWT authentication.
 - `POST /api/v1/auth/login` - Login user
 - `POST /api/v1/transfers` - Create money transfer
 - `GET /api/v1/accounts/{id}` - Get account details
+- `GET /api/v1/accounts/{id}/lookup` - Lookup recipient by account number
 - `GET /api/v1/accounts/{id}/balance` - Get account balance
 - `GET /api/v1/accounts/{id}/transactions` - Get transaction history
+- `GET /api/v1/admin/*` - Admin only endpoints for dashboard and management
 
 ## Troubleshooting
 
@@ -131,7 +137,7 @@ All endpoints require JWT authentication.
 ### Can't connect to database
 
 - Ensure MySQL service is running
-- Verify database exists: `mysql -u root -p money_transfer -e "SHOW TABLES;"`
+- Verify database exists: `mysql -u root -p money_transfer_db -e "SHOW TABLES;"`
 
 ### Port already in use
 

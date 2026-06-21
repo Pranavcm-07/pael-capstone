@@ -13,17 +13,17 @@
 1. Create the database and user in MySQL:
 
 ```sql
-CREATE DATABASE money_transfer;
+CREATE DATABASE money_transfer_db;
 CREATE USER 'money_user'@'localhost' IDENTIFIED BY 'money_pass';
-GRANT ALL PRIVILEGES ON money_transfer.* TO 'money_user'@'localhost';
+GRANT ALL PRIVILEGES ON money_transfer_db.* TO 'money_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
 2. Apply schema and seed data (from the project root):
 
 ```bash
-mysql -u money_user -p money_transfer < database/schema.sql
-mysql -u money_user -p money_transfer < database/seed-data.sql
+mysql -u money_user -p money_transfer_db < database/schema.sql
+mysql -u money_user -p money_transfer_db < database/seed-data.sql
 ```
 
 3. Start the backend:
@@ -33,12 +33,14 @@ cd backend
 mvn spring-boot:run
 ```
 
-APIs (secured with Basic Auth `user/password`):
+APIs (secured with JWT via /api/v1/auth/login):
 
 - `POST /api/v1/transfers`
 - `GET /api/v1/accounts/{id}`
+- `GET /api/v1/accounts/{id}/lookup`
 - `GET /api/v1/accounts/{id}/balance`
 - `GET /api/v1/accounts/{id}/transactions`
+- `GET /api/v1/admin/*`
 
 ## Frontend (Angular)
 
